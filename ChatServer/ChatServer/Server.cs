@@ -20,6 +20,7 @@ namespace ChatServer
             this.name = name;
             commandsMap.Add("MSG", MSG);
             commandsMap.Add("NICK", NICK);
+            commandsMap.Add("PRIVMSG", PRIVMSG);
         }
 
         public void Start()
@@ -36,21 +37,20 @@ namespace ChatServer
                 {
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
-                    NetworkStream s = user.GetStream();
-                    SendMessage(s, "Тебя приветствует сервер " + name + "!");
+                    SendMessage(user, "Тебя приветствует сервер " + name + "!");
                     while (true)
                     {
                         string mess = "";
                         try
                         {
-                            mess = GetNextMessage(s);
+                            mess = GetNextMessage(user);
                         }
                         catch
                         {
                             Console.WriteLine("Ошибка получения сообщения!");
                             Console.WriteLine("Подключение с {0} будет разорвано!",
                                 user.name);
-                            lock(users) users.Remove(user);
+                            lock (users) users.Remove(user);
                             user.client.Close();
                             return;
                         }
@@ -65,6 +65,7 @@ namespace ChatServer
                         {
                             Console.WriteLine("Неверная команда или параметры! ({0}: {1})",
                                 user.name, mess);
+                            SendMessage(user, "ERROR 001");
                         }
                     }
                 });
@@ -82,6 +83,11 @@ namespace ChatServer
             return Encoding.UTF8.GetString(messageBuffer);
         }
 
+        public string GetNextMessage(User user)
+        {
+            return GetNextMessage(user.GetStream());
+        }
+
         public void SendMessage(NetworkStream ns, string message)
         {
             byte[] messageBuffer = Encoding.UTF8.GetBytes(message);
@@ -89,6 +95,31 @@ namespace ChatServer
             byte[] sizeBuffer = BitConverter.GetBytes(size);
             ns.Write(sizeBuffer, 0, 4);
             ns.Write(messageBuffer, 0, size);
+        }
+
+        public void SendMessage(User user, string message)
+        {
+            try
+            {
+                SendMessage(user.GetStream(), message);
+            }
+            catch
+            {
+                Console.WriteLine("Ошибка отправки сообщения!");
+                Console.WriteLine("Подключение с {0} будет разорвано!", user.name);
+                lock (users) users.Remove(user);
+                user.client.Close();
+                return;
+            }
+        }
+
+        public User FindUserByName(string name)
+        {
+            foreach (User user in users)
+            {
+                if (user.name == name) return user;
+            }
+            return null;
         }
 
         public void MSG(User user, string prms)
@@ -99,16 +130,56 @@ namespace ChatServer
             {
                 foreach (User target in users)
                 {
-                    SendMessage(user.GetStream(), message);
+                    try
+                    {
+                        SendMessage(target, message);
+                    }
+                    catch
+                    {
+                        SendMessage(user, "ERROR 002");
+                    }
                 }
             }
         }
 
         public void NICK(User user, string prms)
-        {
+        { 
             string newName = prms.Split(' ')[0];
+            if(FindUserByName(newName)!=null)
+            {
+                SendMessage(user, "ERROR 051");
+                return;
+            }
             Console.WriteLine(user.name + " changed nick to " + newName);
             user.name = newName;
+            SendMessage(user, "ERROR 050");
+        }
+
+        public void PRIVMSG(User user, string prms)
+        {
+            int splitter = prms.IndexOf(' ');
+            if (splitter == -1)
+            {
+                SendMessage(user, "ERROR 001");
+                return;
+            }
+            string targetName = prms.Substring(0, splitter);
+            string message = prms.Substring(splitter + 1);
+            User target = FindUserByName(targetName);
+            if (target == null)
+            {
+                SendMessage(user, "ERROR 003");
+                return;
+            }
+            try
+            {
+                SendMessage(target, "MSG "+user.name+": "+message);
+            }
+            catch
+            {
+                SendMessage(user, "ERROR 002");
+                return;
+            }
         }
     }
 }
