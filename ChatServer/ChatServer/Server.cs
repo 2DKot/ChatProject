@@ -8,12 +8,13 @@ using System.Threading;
 
 namespace ChatServer
 {
-    class Server
+    partial class Server
     {
-        string name;
+        public string name;
         List<User> users = new List<User>();
         delegate void command(User user, string prms);
         Dictionary<string, command> commandsMap = new Dictionary<string, command>();
+        TcpListener listener;
 
         public Server(string name = "chatServer")
         {
@@ -25,12 +26,20 @@ namespace ChatServer
 
         public void Start()
         {
-            Console.WriteLine("Сервер запущен!");
-            TcpListener listener = new TcpListener(IPAddress.Any, 666);
+            Console.WriteLine("Сервер {0} запущен!", name);
+            listener = new TcpListener(IPAddress.Any, 666);
             listener.Start();
             while (true)
             {
-                User user = new User(listener.AcceptTcpClient());
+                User user;
+                try
+                {
+                    user = new User(listener.AcceptTcpClient());
+                }
+                catch
+                {
+                    break;
+                }
                 users.Add(user);
                 user.name += users.Count();
                 Thread thread = new Thread(() =>
@@ -69,8 +78,19 @@ namespace ChatServer
                         }
                     }
                 });
-                thread.Start();
+                thread.Start();       
             }
+            Console.WriteLine("Я закрылся!");
+        }
+
+        public void Stop()
+        {
+            foreach (User user in users)
+            {
+                user.client.Close();
+            }
+            listener.Stop();
+            Console.WriteLine("Сервер был закрыт");
         }
 
         public string GetNextMessage(NetworkStream ns)
@@ -120,66 +140,6 @@ namespace ChatServer
                 if (user.name == name) return user;
             }
             return null;
-        }
-
-        public void MSG(User user, string prms)
-        {
-            string message = "MSG " + user.name + ": " + prms;
-            Console.WriteLine("Send to all: " + message);
-            lock (users)
-            {
-                foreach (User target in users)
-                {
-                    try
-                    {
-                        SendMessage(target, message);
-                    }
-                    catch
-                    {
-                        SendMessage(user, "ERROR 002");
-                    }
-                }
-            }
-        }
-
-        public void NICK(User user, string prms)
-        { 
-            string newName = prms.Split(' ')[0];
-            if(FindUserByName(newName)!=null)
-            {
-                SendMessage(user, "ERROR 051");
-                return;
-            }
-            Console.WriteLine(user.name + " changed nick to " + newName);
-            user.name = newName;
-            SendMessage(user, "ERROR 050");
-        }
-
-        public void PRIVMSG(User user, string prms)
-        {
-            int splitter = prms.IndexOf(' ');
-            if (splitter == -1)
-            {
-                SendMessage(user, "ERROR 001");
-                return;
-            }
-            string targetName = prms.Substring(0, splitter);
-            string message = prms.Substring(splitter + 1);
-            User target = FindUserByName(targetName);
-            if (target == null)
-            {
-                SendMessage(user, "ERROR 003");
-                return;
-            }
-            try
-            {
-                SendMessage(target, "MSG "+user.name+": "+message);
-            }
-            catch
-            {
-                SendMessage(user, "ERROR 002");
-                return;
-            }
         }
     }
 }

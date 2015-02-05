@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace ChatServer
 {
@@ -9,8 +11,9 @@ namespace ChatServer
     {
         static void Main(string[] args)
         {
-            Server server = new Server("2DKot server");
-            server.Start();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new ServerForm());
         }
     }
 }
