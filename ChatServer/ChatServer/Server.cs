@@ -23,6 +23,7 @@ namespace ChatServer
             commandsMap.Add("MSG", MSG);
             commandsMap.Add("NICK", NICK);
             commandsMap.Add("PRIVMSG", PRIVMSG);
+            commandsMap.Add("NAMES", NAMES);
         }
 
         public void Start()
@@ -48,7 +49,8 @@ namespace ChatServer
                 {
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
-                    SendMessage(user, "Тебя приветствует сервер " + name + "!");
+                    SendMessage(user.name + " присоединился к чату.");
+                    SendNamesToAll();
                     while (!stopped)
                     {
                         string mess = "";
@@ -65,22 +67,34 @@ namespace ChatServer
                             user.client.Close();
                             return;
                         }
-                        try
+                        int splitter = mess.IndexOf(' ');
+                        if (splitter > 0)
                         {
-                            int splitter = mess.IndexOf(' ');
                             string comm = mess.Substring(0, splitter);
                             string prms = mess.Substring(splitter + 1);
-                            commandsMap[comm](user, prms);
+                            try
+                            {
+                                commandsMap[comm](user, prms);
+                            }
+                            catch
+                            {
+                                SendMessage(user, "ERROR 001");
+                            }
                         }
-                        catch
+                        else
                         {
-                            Console.WriteLine("Неверная команда или параметры! ({0}: {1})",
-                                user.name, mess);
-                            SendMessage(user, "ERROR 001");
+                            try
+                            {
+                                commandsMap[mess](user, "");
+                            }
+                            catch
+                            {
+                                SendMessage(user, "ERROR 001");
+                            }
                         }
                     }
                 });
-                thread.Start();       
+                thread.Start();
             }
             Console.WriteLine("Я закрылся!");
         }
@@ -97,7 +111,7 @@ namespace ChatServer
             Console.WriteLine("Сервер был закрыт");
         }
 
-        public string GetNextMessage(NetworkStream ns)
+        string GetNextMessage(NetworkStream ns)
         {
             byte[] sizeBuffer = new byte[4];
             ns.Read(sizeBuffer, 0, 4);
@@ -107,12 +121,12 @@ namespace ChatServer
             return Encoding.UTF8.GetString(messageBuffer);
         }
 
-        public string GetNextMessage(User user)
+        string GetNextMessage(User user)
         {
             return GetNextMessage(user.GetStream());
         }
 
-        public void SendMessage(NetworkStream ns, string message)
+        void SendMessage(NetworkStream ns, string message)
         {
             byte[] messageBuffer = Encoding.UTF8.GetBytes(message);
             int size = messageBuffer.Count();
@@ -121,7 +135,7 @@ namespace ChatServer
             ns.Write(messageBuffer, 0, size);
         }
 
-        public void SendMessage(User user, string message)
+        void SendMessage(User user, string message)
         {
             try
             {
@@ -137,7 +151,7 @@ namespace ChatServer
             }
         }
 
-        public void SendMessage(string message)
+        void SendMessage(string message)
         {
             Console.WriteLine("Send to all: " + message);
             lock (users)
@@ -156,13 +170,23 @@ namespace ChatServer
             }
         }
 
-        public User FindUserByName(string name)
+        User FindUserByName(string name)
         {
             foreach (User user in users)
             {
                 if (user.name == name) return user;
             }
             return null;
+        }
+
+        void SendNamesToAll()
+        {
+            string message = "NAMES";
+            foreach (User one in users)
+            {
+                message += " " + one.name;
+            }
+            SendMessage(message);
         }
     }
 }

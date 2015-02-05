@@ -36,14 +36,10 @@ namespace ChatServer
                 return;
             }
             Console.WriteLine(user.name + " changed nick to " + newName);
+            SendMessage(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
             SendMessage(user, "ERROR 050");
-            string message = "NAMES";
-            foreach (User one in users)
-            {
-                message += " " + one.name;
-            }
-            SendMessage(message);
+            SendNamesToAll();
         }
 
         void PRIVMSG(User user, string prms)

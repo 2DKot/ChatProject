@@ -33,6 +33,7 @@
             this.lServerName = new System.Windows.Forms.Label();
             this.bStopServer = new System.Windows.Forms.Button();
             this.lIP = new System.Windows.Forms.Label();
+            this.lHelp = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // bStartServer
@@ -51,6 +52,7 @@
             this.tbServerName.Name = "tbServerName";
             this.tbServerName.Size = new System.Drawing.Size(100, 20);
             this.tbServerName.TabIndex = 1;
+            this.tbServerName.Text = "2DKot";
             // 
             // lServerName
             // 
@@ -75,24 +77,35 @@
             // lIP
             // 
             this.lIP.AutoSize = true;
-            this.lIP.Location = new System.Drawing.Point(205, 19);
+            this.lIP.Location = new System.Drawing.Point(124, 28);
             this.lIP.Name = "lIP";
             this.lIP.Size = new System.Drawing.Size(45, 13);
             this.lIP.TabIndex = 5;
             this.lIP.Text = "Ваш ip: ";
             // 
+            // lHelp
+            // 
+            this.lHelp.AutoSize = true;
+            this.lHelp.Location = new System.Drawing.Point(251, 0);
+            this.lHelp.Name = "lHelp";
+            this.lHelp.Size = new System.Drawing.Size(13, 13);
+            this.lHelp.TabIndex = 6;
+            this.lHelp.Text = "?";
+            this.lHelp.Click += new System.EventHandler(this.lHelp_Click);
+            // 
             // ServerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(417, 80);
+            this.ClientSize = new System.Drawing.Size(267, 80);
+            this.Controls.Add(this.lHelp);
             this.Controls.Add(this.lIP);
             this.Controls.Add(this.bStopServer);
             this.Controls.Add(this.lServerName);
             this.Controls.Add(this.tbServerName);
             this.Controls.Add(this.bStartServer);
             this.Name = "ServerForm";
-            this.Text = "ServerForm";
+            this.Text = "ChatServer";
             this.Load += new System.EventHandler(this.ServerForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -106,5 +119,6 @@
         private System.Windows.Forms.Label lServerName;
         private System.Windows.Forms.Button bStopServer;
         private System.Windows.Forms.Label lIP;
+        private System.Windows.Forms.Label lHelp;
     }
 }

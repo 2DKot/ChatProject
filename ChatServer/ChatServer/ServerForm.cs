@@ -52,5 +52,10 @@ namespace ChatServer
             bStopServer.Enabled = false;
         }
 
+        private void lHelp_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Server was developed by Baydin 2DKot Konstantin");
+        }
+
     }
 }
