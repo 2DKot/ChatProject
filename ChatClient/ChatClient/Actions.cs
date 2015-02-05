@@ -21,7 +21,9 @@ namespace ChatClient
             serviceCodeToDefinition.Add(51, ErrorTheNickIsUsed);
             serviceCodeToDefinition.Add(52, ErrorTheNickIsIncorrect);
             //*****************************//
-
+            commandToHandler.Add("MSG", MSG);
+            commandToHandler.Add("ERROR", ERROR);
+            commandToHandler.Add("PRIVMSG)", PRIVMSG);
         }
         static private string ErrorIncorrectFormatOfMessage()
         {
@@ -69,8 +71,6 @@ namespace ChatClient
             }
             catch { }
             return fail;
-          
-            
         }
     }
 }

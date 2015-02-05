@@ -12,6 +12,7 @@ namespace ChatClient
 {
     class User
     {
+        //Dict: Service Code to Instance of Delegate
         TcpClient clientToServer;
         NetworkStream nStream;
         static User instance = null;
@@ -60,27 +61,24 @@ namespace ChatClient
             }
             return rInstance;
         }
-]
+
+        // int - number of error
         public void RequestToChangeNickName(string nick)
         {
             string command = "NICK ";
             SendText(command + nick);
         }
-		
+        // int - number of error
         public void LogIn(string ip, int port)
         {
-            try
+            IPEndPoint remoteIEP = GetInstance().GetIEP(ip, port);
+            GetInstance().nStream = GetInstance().GetNetworkStream(remoteIEP);
+            if (GetInstance().nStream == null)
             {
-                IPEndPoint remoteIEP = GetInstance().GetIEP(ip, port);
-                GetInstance().nStream = GetInstance().GetNetworkStream(remoteIEP);
+                throw new Exception();
             }
-            catch
-            {
-                //Log to Box
-            }    
+          
         }
-        
-        
         public void SendText(string message)
         {
             byte[] buffWithMessage = StringToBytes(message);
@@ -107,22 +105,6 @@ namespace ChatClient
             message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
             return message;
         }
-        public void ShowMessages()
-        {
-            
-            string receivedMessage = "";
-            
-            Thread readingThread = new Thread(() =>
-                {
-                    while (true)
-                    {
-                        receivedMessage = GetInstance().GetMessage();
-                        //Отпрвка в метод, который в свою очередь записывает в чат.
-                       
-                    }
-                });
-            readingThread.Start();
-        }
         public string HandleMessage(string text)
         {
             int firstIndexTab = text.IndexOf(' ');
@@ -135,7 +117,6 @@ namespace ChatClient
             }
             else
             { 
-				//Проверка будет со стороны сервера ?
                 return "Некорректный формат сообщения";
             }
             return Actions.commandToHandler[command](restParameters);
