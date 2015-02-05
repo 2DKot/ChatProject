@@ -12,8 +12,8 @@ namespace ChatClient
 {
     public partial class ClientWindow : Form
     {
-        public delegate void strDel(string arg);
-        public delegate void strListDel(List<string> args);
+        private delegate void strDel(string arg);
+        private delegate void strListDel(List<string> args);
 
         public ClientWindow()
         {
@@ -63,10 +63,9 @@ namespace ChatClient
                 this.AddTextInChatBox(newMessage);
                 this.EnableGettingNewInformation();
             }
-            catch
+            catch (NullReferenceException exc)
             {
-                //Log about bad connection to box
-                MessageBox.Show("Подключение не было произведено. Проверьте ip-адрес и порт.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт. Ошибка: " + exc.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void AddTextInChatBox(string text)
@@ -89,7 +88,10 @@ namespace ChatClient
                     try
                     {
                         string newMessage = User.GetInstance().GetMessage();
-                        newMessage = User.GetInstance().HandleMessage(newMessage);
+                        if (this.DebugCheckBox.Checked == false)
+                        {
+                            newMessage = User.GetInstance().HandleMessage(newMessage);
+                        }
                         this.Invoke(new strDel(this.AddTextInChatBox), new object[] { newMessage });
                         if (tempNicks != User.GetInstance().listOfNickNames)
                         {

@@ -64,7 +64,7 @@ namespace ChatClient
         }
         static private string PRIVMSG(string restParameters)
         {
-            return ("ЫЫЫ");
+            return ("Сообщение от " + restParameters);
         }
         static private string ERROR(string restParameters)
         {
@@ -81,7 +81,6 @@ namespace ChatClient
         static private string NAMES(string restParameters)
         {
             User.GetInstance().listOfNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
-
             return "Обновление списка пользователей.";
         }
     }

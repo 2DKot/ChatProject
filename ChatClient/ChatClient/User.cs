@@ -28,7 +28,6 @@ namespace ChatClient
         }
         private User()
         {
-            clientToServer = new TcpClient();
             listOfNickNames = new List<string>();
 
         }
@@ -50,6 +49,7 @@ namespace ChatClient
             NetworkStream rInstance = null;
             try
             {
+                GetInstance().clientToServer = new TcpClient();
                 GetInstance().clientToServer.Connect(remoteIEP);
                 rInstance = GetInstance().clientToServer.GetStream();
             }
@@ -72,7 +72,7 @@ namespace ChatClient
             GetInstance().nStream = GetInstance().GetNetworkStream(remoteIEP);
             if (GetInstance().nStream == null)
             {
-                throw new Exception();
+                throw new NullReferenceException();
             }
           
         }
@@ -130,7 +130,7 @@ namespace ChatClient
             }
             else
             { 
-                return "Некорректный формат сообщения. Работа с сервером могла быть прекращена.";
+                return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";
             }
             return Actions.commandToHandler[command](restParameters);
         }
