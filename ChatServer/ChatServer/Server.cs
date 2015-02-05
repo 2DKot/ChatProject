@@ -15,6 +15,7 @@ namespace ChatServer
         delegate void command(User user, string prms);
         Dictionary<string, command> commandsMap = new Dictionary<string, command>();
         TcpListener listener;
+        bool stopped;
 
         public Server(string name = "chatServer")
         {
@@ -26,10 +27,11 @@ namespace ChatServer
 
         public void Start()
         {
+            stopped = false;
             Console.WriteLine("Сервер {0} запущен!", name);
             listener = new TcpListener(IPAddress.Any, 666);
             listener.Start();
-            while (true)
+            while (!stopped)
             {
                 User user;
                 try
@@ -47,7 +49,7 @@ namespace ChatServer
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
                     SendMessage(user, "Тебя приветствует сервер " + name + "!");
-                    while (true)
+                    while (!stopped)
                     {
                         string mess = "";
                         try
@@ -85,11 +87,13 @@ namespace ChatServer
 
         public void Stop()
         {
+            SendMessage("ERROR 100");
             foreach (User user in users)
             {
                 user.client.Close();
             }
             listener.Stop();
+            stopped = true;
             Console.WriteLine("Сервер был закрыт");
         }
 
@@ -130,6 +134,25 @@ namespace ChatServer
                 lock (users) users.Remove(user);
                 user.client.Close();
                 return;
+            }
+        }
+
+        public void SendMessage(string message)
+        {
+            Console.WriteLine("Send to all: " + message);
+            lock (users)
+            {
+                foreach (User target in users)
+                {
+                    try
+                    {
+                        SendMessage(target, message);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Проблемка!");
+                    }
+                }
             }
         }
 
