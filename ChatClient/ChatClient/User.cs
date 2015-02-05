@@ -15,8 +15,8 @@ namespace ChatClient
         //Dict: Service Code to Instance of Delegate
         TcpClient clientToServer;
         NetworkStream nStream;
-        static User instance = null;
-        string nickName;
+        static User instance;
+        public List<string> listOfNickNames;
         
         public static User GetInstance()
         {
@@ -29,10 +29,8 @@ namespace ChatClient
         private User()
         {
             clientToServer = new TcpClient();
-        }
-        private User(string nickName): this()
-        {
-            this.nickName = nickName;
+            listOfNickNames = new List<string>();
+
         }
         private IPEndPoint GetIEP(string ip, int port)
         {
@@ -57,12 +55,11 @@ namespace ChatClient
             }
             catch
             {
-                //Make note in log
+                throw new SocketException();
             }
             return rInstance;
         }
 
-        // int - number of error
         public void RequestToChangeNickName(string nick)
         {
             string command = "NICK ";
@@ -81,13 +78,20 @@ namespace ChatClient
         }
         public void SendText(string message)
         {
-            byte[] buffWithMessage = StringToBytes(message);
-            int length = buffWithMessage.Length;
-            byte[] buffWithLength = BitConverter.GetBytes(length);
-            //First sending is data about size of a message
-            GetInstance().nStream.Write(buffWithLength, 0, buffWithLength.Length);
-            //Second sending is the message
-            GetInstance().nStream.Write(buffWithMessage, 0, length);
+            try
+            {
+                byte[] buffWithMessage = StringToBytes(message);
+                int length = buffWithMessage.Length;
+                byte[] buffWithLength = BitConverter.GetBytes(length);
+                //First sending is data about size of a message
+                GetInstance().nStream.Write(buffWithLength, 0, buffWithLength.Length);
+                //Second sending is the message
+                GetInstance().nStream.Write(buffWithMessage, 0, length);
+            }
+            catch
+            {
+                throw new NullReferenceException();
+            }
             
         }
         public string GetMessage()
@@ -103,7 +107,16 @@ namespace ChatClient
             buffWithMessage = new byte[lengthOfMessage];
             nStream.Read(buffWithMessage, 0, lengthOfMessage);
             message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
+            if (IsFailedMessage(message))
+            {
+                GetInstance().clientToServer.Close();
+                GetInstance().nStream = null;
+            }
             return message;
+        }
+        private bool IsFailedMessage(string text)
+        {
+            return text == "";
         }
         public string HandleMessage(string text)
         {
@@ -117,7 +130,7 @@ namespace ChatClient
             }
             else
             { 
-                return "Некорректный формат сообщения";
+                return "Некорректный формат сообщения. Работа с сервером могла быть прекращена.";
             }
             return Actions.commandToHandler[command](restParameters);
         }

@@ -20,10 +20,12 @@ namespace ChatClient
             serviceCodeToDefinition.Add(50, NickHasChangedSuccesful);
             serviceCodeToDefinition.Add(51, ErrorTheNickIsUsed);
             serviceCodeToDefinition.Add(52, ErrorTheNickIsIncorrect);
+            serviceCodeToDefinition.Add(100, ErrorServerIsGoingToStop);
             //*****************************//
             commandToHandler.Add("MSG", MSG);
             commandToHandler.Add("ERROR", ERROR);
             commandToHandler.Add("PRIVMSG)", PRIVMSG);
+            commandToHandler.Add("NAMES", NAMES);
         }
         static private string ErrorIncorrectFormatOfMessage()
         {
@@ -49,6 +51,10 @@ namespace ChatClient
         {
             return "Данный ник-нейм не соответствует правилам сервера";
         }
+        static private string ErrorServerIsGoingToStop()
+        {
+            return "Сервер собирается приостановить свою работу. Будет произведен разрыв соединения.";
+        }
 
         //*****************************//
 
@@ -71,6 +77,12 @@ namespace ChatClient
             }
             catch { }
             return fail;
+        }
+        static private string NAMES(string restParameters)
+        {
+            User.GetInstance().listOfNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
+
+            return "Обновление списка пользователей.";
         }
     }
 }

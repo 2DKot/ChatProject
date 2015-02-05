@@ -39,6 +39,9 @@
             this.NickNameLabel = new System.Windows.Forms.Label();
             this.NickNameTextBox = new System.Windows.Forms.TextBox();
             this.RequestNickNameButton = new System.Windows.Forms.Button();
+            this.NickNamesListBox = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.DebugCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // RTMainChatBox
@@ -135,11 +138,41 @@
             this.RequestNickNameButton.UseVisualStyleBackColor = true;
             this.RequestNickNameButton.Click += new System.EventHandler(this.RequestNickNameButton_Click);
             // 
+            // NickNamesListBox
+            // 
+            this.NickNamesListBox.FormattingEnabled = true;
+            this.NickNamesListBox.Location = new System.Drawing.Point(303, 145);
+            this.NickNamesListBox.Name = "NickNamesListBox";
+            this.NickNamesListBox.Size = new System.Drawing.Size(115, 199);
+            this.NickNamesListBox.TabIndex = 11;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(303, 126);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(115, 13);
+            this.label1.TabIndex = 12;
+            this.label1.Text = "Пользователи в сети";
+            // 
+            // DebugCheckBox
+            // 
+            this.DebugCheckBox.AutoSize = true;
+            this.DebugCheckBox.Location = new System.Drawing.Point(322, 13);
+            this.DebugCheckBox.Name = "DebugCheckBox";
+            this.DebugCheckBox.Size = new System.Drawing.Size(88, 17);
+            this.DebugCheckBox.TabIndex = 13;
+            this.DebugCheckBox.Text = "Debug Mode";
+            this.DebugCheckBox.UseVisualStyleBackColor = true;
+            // 
             // ClientWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(417, 387);
+            this.ClientSize = new System.Drawing.Size(421, 387);
+            this.Controls.Add(this.DebugCheckBox);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.NickNamesListBox);
             this.Controls.Add(this.RequestNickNameButton);
             this.Controls.Add(this.NickNameTextBox);
             this.Controls.Add(this.NickNameLabel);
@@ -171,6 +204,9 @@
         private System.Windows.Forms.Label NickNameLabel;
         private System.Windows.Forms.TextBox NickNameTextBox;
         private System.Windows.Forms.Button RequestNickNameButton;
+        private System.Windows.Forms.ListBox NickNamesListBox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.CheckBox DebugCheckBox;
     }
 }
 

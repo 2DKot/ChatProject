@@ -13,6 +13,7 @@ namespace ChatClient
     public partial class ClientWindow : Form
     {
         public delegate void strDel(string arg);
+        public delegate void strListDel(List<string> args);
 
         public ClientWindow()
         {
@@ -26,15 +27,27 @@ namespace ChatClient
 
         private void SendButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string sendingMeassage = TypingBox.Text;
-                User.GetInstance().SendText("MSG " + sendingMeassage);
-            }
-            catch
-            {
-                MessageBox.Show("Проверьте сервер.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            
+                try
+                {
+                    
+                    string sendingMeassage = this.TypingBox.Text;
+                    if (this.DebugCheckBox.Checked == false)
+                    {
+                        User.GetInstance().SendText("MSG " + sendingMeassage);
+                    }
+                    else
+                    {
+                        User.GetInstance().SendText(sendingMeassage);
+                    }
+                    this.TypingBox.Clear();
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу : " + exc.Message,
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            
         }
 
         //Производит подключение и активизирует получение сообщений от сервера
@@ -48,12 +61,12 @@ namespace ChatClient
                 string newMessage = "";
                 newMessage = User.GetInstance().GetMessage();
                 this.AddTextInChatBox(newMessage);
-                this.EnableGettingMessages();
+                this.EnableGettingNewInformation();
             }
             catch
             {
                 //Log about bad connection to box
-                MessageBox.Show("Connect is failed. Check ip-adress and port.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Подключение не было произведено. Проверьте ip-адрес и порт.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void AddTextInChatBox(string text)
@@ -65,41 +78,58 @@ namespace ChatClient
         {
 
         }*/
-        private void EnableGettingMessages()
+        private void EnableGettingNewInformation()
         {
             Thread gettingMessagesThread;
+            List<string> tempNicks = (List<string>)this.NickNamesListBox.DataSource;
             gettingMessagesThread = new Thread(() =>
             {
                 while (true)
                 {
                     try
                     {
-                        string newMessage = "";
-                        newMessage = User.GetInstance().GetMessage();
+                        string newMessage = User.GetInstance().GetMessage();
                         newMessage = User.GetInstance().HandleMessage(newMessage);
                         this.Invoke(new strDel(this.AddTextInChatBox), new object[] { newMessage });
+                        if (tempNicks != User.GetInstance().listOfNickNames)
+                        {
+                            this.Invoke(new strListDel (this.RefreshNickNamesListBox), new object[] {User.GetInstance().listOfNickNames});
+                        }
                     }
-                    catch (NullReferenceException e)
+                    catch (Exception e)
                     {
-                        MessageBox.Show("Ошибка. Скорее всего, сервер прикратил свою работу. \r\n" + e.ToString(),
+                        MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу : " + e.Message,
                             "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
                     }
                 }
             });
             gettingMessagesThread.IsBackground = true;
             gettingMessagesThread.Start();
         }
+        /*private void EnableGettingNickNames()*/
 
         private void RequestNickNameButton_Click(object sender, EventArgs e)
         {
-
-            NickNameTextBox.Text.Trim();
-            string newNick = NickNameTextBox.Text;
-            if (NickNameTextBox.Text.Length != 0)
+            try
             {
-                User.GetInstance().RequestToChangeNickName(newNick);
+                NickNameTextBox.Text.Trim();
+                string newNick = NickNameTextBox.Text;
+                if (NickNameTextBox.Text.Length != 0)
+                {
+                    User.GetInstance().RequestToChangeNickName(newNick);
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу : " + exc.Message,
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
+        private void RefreshNickNamesListBox (List<string> nicks)
+        {
+            this.NickNamesListBox.DataSource = nicks;
+            this.NickNamesListBox.Refresh();
+        }
     }
 }
