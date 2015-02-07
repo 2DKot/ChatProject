@@ -49,7 +49,7 @@ namespace ChatServer
                 {
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
-                    SendMessage(user.name + " присоединился к чату.");
+                    SendMessage("MSG " + user.name + " присоединился к чату.");
                     SendNamesToAll();
                     while (!stopped)
                     {
