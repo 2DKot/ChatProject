@@ -60,7 +60,7 @@ namespace ChatServer
             }
             try
             {
-                SendMessage(target, "MSG " + user.name + ": " + message);
+                SendMessage(target, "PRIVMSG " + user.name + ": " + message);
             }
             catch
             {

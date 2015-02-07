@@ -65,6 +65,7 @@ namespace ChatServer
                                 user.name);
                             lock (users) users.Remove(user);
                             user.client.Close();
+                            SendNamesToAll();
                             return;
                         }
                         int splitter = mess.IndexOf(' ');
