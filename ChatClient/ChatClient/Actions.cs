@@ -64,11 +64,13 @@ namespace ChatClient
         }
         static private string PRIVMSG(string restParameters)
         {
+            int indexForDivision = restParameters.IndexOf(' ');
+            restParameters = restParameters.Insert(indexForDivision, ":");
             return ("Сообщение от " + restParameters);
         }
         static private string ERROR(string restParameters)
         {
-            string fail = "Ошибка неизвестного вида";
+            string UndefinedError = "Ошибка неизвестного вида";
             int numberOfError = 0;
             try
             {
@@ -76,7 +78,7 @@ namespace ChatClient
                 return serviceCodeToDefinition[numberOfError]();
             }
             catch { }
-            return fail;
+            return UndefinedError;
         }
         static private string NAMES(string restParameters)
         {

@@ -40,23 +40,19 @@ namespace ChatClient
             }
             catch
             {
-                //Make note in log
+                throw new Exception();
             }
             return rInstance;
+        }
+        static private TcpClient GetNewTCPClient()
+        {
+            return (new TcpClient());
         }
         private NetworkStream GetNetworkStream(IPEndPoint remoteIEP)
         {
             NetworkStream rInstance = null;
-            try
-            {
-                GetInstance().clientToServer = new TcpClient();
-                GetInstance().clientToServer.Connect(remoteIEP);
-                rInstance = GetInstance().clientToServer.GetStream();
-            }
-            catch
-            {
-                throw new SocketException();
-            }
+            this.clientToServer.Connect(remoteIEP);
+            rInstance = this.clientToServer.GetStream();
             return rInstance;
         }
 
@@ -65,16 +61,31 @@ namespace ChatClient
             string command = "NICK ";
             SendText(command + nick);
         }
-        // int - number of error
+        
         public void LogIn(string ip, int port)
         {
-            IPEndPoint remoteIEP = GetInstance().GetIEP(ip, port);
-            GetInstance().nStream = GetInstance().GetNetworkStream(remoteIEP);
-            if (GetInstance().nStream == null)
+            IPEndPoint remoteIEP = this.GetIEP(ip, port);
+            this.clientToServer = User.GetNewTCPClient();
+            this.nStream = this.GetNetworkStream(remoteIEP);
+            if (this.nStream == null)
             {
                 throw new NullReferenceException();
             }
-          
+        }
+        public void LogOut()
+        {
+            try
+            {
+                if (this.clientToServer != null)
+                {
+                    this.clientToServer.Close();
+                    this.nStream = null;
+                }
+            }
+            catch
+            {
+                throw new SocketException();
+            }
         }
         public void SendText(string message)
         {
@@ -90,29 +101,38 @@ namespace ChatClient
             }
             catch
             {
-                throw new NullReferenceException();
+                throw new SocketException();
             }
             
         }
         public string GetMessage()
         {
-            byte[] buffWithLength;
-            int lengthOfBuffWithLength = 4;
-            string message;
-            byte[] buffWithMessage;
-
-            buffWithLength = new byte[lengthOfBuffWithLength];
-            nStream.Read(buffWithLength, 0, lengthOfBuffWithLength);
-            int lengthOfMessage = BitConverter.ToInt32(buffWithLength, 0);
-            buffWithMessage = new byte[lengthOfMessage];
-            nStream.Read(buffWithMessage, 0, lengthOfMessage);
-            message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
-            if (IsFailedMessage(message))
+            string message = "";
+            try
             {
-                GetInstance().clientToServer.Close();
-                GetInstance().nStream = null;
+                byte[] buffWithLength;
+                int lengthOfBuffWithLength = 4;
+                
+                byte[] buffWithMessage;
+
+                buffWithLength = new byte[lengthOfBuffWithLength];
+                nStream.Read(buffWithLength, 0, lengthOfBuffWithLength);
+                int lengthOfMessage = BitConverter.ToInt32(buffWithLength, 0);
+                buffWithMessage = new byte[lengthOfMessage];
+                nStream.Read(buffWithMessage, 0, lengthOfMessage);
+                message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
+                if (IsFailedMessage(message))
+                {
+                    GetInstance().clientToServer.Close();
+                    GetInstance().nStream = null;
+                }
+                return message;
+                
             }
-            return message;
+            catch
+            {
+                throw new SocketException();
+            }
         }
         private bool IsFailedMessage(string text)
         {

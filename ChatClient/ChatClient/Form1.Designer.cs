@@ -42,12 +42,14 @@
             this.NickNamesListBox = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.DebugCheckBox = new System.Windows.Forms.CheckBox();
+            this.DisconnectButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // RTMainChatBox
             // 
             this.RTMainChatBox.Location = new System.Drawing.Point(12, 53);
             this.RTMainChatBox.Name = "RTMainChatBox";
+            this.RTMainChatBox.ReadOnly = true;
             this.RTMainChatBox.Size = new System.Drawing.Size(285, 291);
             this.RTMainChatBox.TabIndex = 0;
             this.RTMainChatBox.Text = "";
@@ -104,7 +106,7 @@
             // 
             // ConnectButton
             // 
-            this.ConnectButton.Location = new System.Drawing.Point(6, 25);
+            this.ConnectButton.Location = new System.Drawing.Point(6, 3);
             this.ConnectButton.Name = "ConnectButton";
             this.ConnectButton.Size = new System.Drawing.Size(79, 23);
             this.ConnectButton.TabIndex = 7;
@@ -145,6 +147,7 @@
             this.NickNamesListBox.Name = "NickNamesListBox";
             this.NickNamesListBox.Size = new System.Drawing.Size(115, 199);
             this.NickNamesListBox.TabIndex = 11;
+            this.NickNamesListBox.SelectedIndexChanged += new System.EventHandler(this.NickNamesListBox_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -165,11 +168,24 @@
             this.DebugCheckBox.Text = "Debug Mode";
             this.DebugCheckBox.UseVisualStyleBackColor = true;
             // 
+            // DisconnectButton
+            // 
+            this.DisconnectButton.Enabled = false;
+            this.DisconnectButton.Location = new System.Drawing.Point(6, 28);
+            this.DisconnectButton.Name = "DisconnectButton";
+            this.DisconnectButton.Size = new System.Drawing.Size(79, 23);
+            this.DisconnectButton.TabIndex = 14;
+            this.DisconnectButton.Text = "Отключить";
+            this.DisconnectButton.UseVisualStyleBackColor = true;
+            this.DisconnectButton.Click += new System.EventHandler(this.DisconnectButton_Click);
+            // 
             // ClientWindow
             // 
+            this.AcceptButton = this.SendButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(421, 387);
+            this.Controls.Add(this.DisconnectButton);
             this.Controls.Add(this.DebugCheckBox);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.NickNamesListBox);
@@ -186,6 +202,7 @@
             this.Controls.Add(this.RTMainChatBox);
             this.Name = "ClientWindow";
             this.Text = "Chat-Client";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClientWindow_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -207,6 +224,7 @@
         private System.Windows.Forms.ListBox NickNamesListBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox DebugCheckBox;
+        private System.Windows.Forms.Button DisconnectButton;
     }
 }
 
