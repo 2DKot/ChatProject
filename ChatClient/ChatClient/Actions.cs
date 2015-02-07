@@ -24,7 +24,7 @@ namespace ChatClient
             //*****************************//
             commandToHandler.Add("MSG", MSG);
             commandToHandler.Add("ERROR", ERROR);
-            commandToHandler.Add("PRIVMSG)", PRIVMSG);
+            commandToHandler.Add("PRIVMSG", PRIVMSG);
             commandToHandler.Add("NAMES", NAMES);
         }
         static private string ErrorIncorrectFormatOfMessage()
