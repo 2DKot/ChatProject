@@ -24,6 +24,7 @@ namespace ChatServer
             commandsMap.Add("NICK", NICK);
             commandsMap.Add("PRIVMSG", PRIVMSG);
             commandsMap.Add("NAMES", NAMES);
+            commandsMap.Add("DATE", DATE);
         }
 
         public void Start()
@@ -46,9 +47,12 @@ namespace ChatServer
                 users.Add(user);
                 user.name += users.Count();
                 Thread thread = new Thread(() =>
-                {
+                { 
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
+                    string date = DateTime.Now.Date.ToLongDateString();
+                    SendMessage(user, String.Format("Тебя приветствует сервер {0}! Время на сервере: {1}",
+                        name, date));
                     SendMessage("MSG " + user.name + " присоединился к чату.");
                     SendNamesToAll();
                     while (!stopped)

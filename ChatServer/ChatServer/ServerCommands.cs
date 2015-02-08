@@ -53,6 +53,7 @@ namespace ChatServer
             string targetName = prms.Substring(0, splitter);
             string message = prms.Substring(splitter + 1);
             User target = FindUserByName(targetName);
+            string formattedMessage = "PRIVMSG " + user.name + ": " + message;
             if (target == null)
             {
                 SendMessage(user, "ERROR 003");
@@ -60,13 +61,14 @@ namespace ChatServer
             }
             try
             {
-                SendMessage(target, "PRIVMSG " + user.name + ": " + message);
+                SendMessage(target, formattedMessage);
             }
             catch
             {
                 SendMessage(user, "ERROR 002");
                 return;
             }
+            SendMessage(user, formattedMessage);
         }
 
         void NAMES(User user, string prms)
@@ -77,6 +79,11 @@ namespace ChatServer
                 message += " " + one.name;
             }
             SendMessage(user, message);
+        }
+
+        void DATE(User user, string prms)
+        {
+            SendMessage(user, "MSG "+DateTime.Now.Date.ToLongDateString());
         }
     }
 }
