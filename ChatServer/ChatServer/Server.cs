@@ -16,6 +16,7 @@ namespace ChatServer
         Dictionary<string, command> commandsMap = new Dictionary<string, command>();
         TcpListener listener;
         bool stopped;
+        Register register;
 
         public Server(string name = "chatServer")
         {
@@ -25,10 +26,14 @@ namespace ChatServer
             commandsMap.Add("PRIVMSG", PRIVMSG);
             commandsMap.Add("NAMES", NAMES);
             commandsMap.Add("DATE", DATE);
+            commandsMap.Add("REG", REG);
+            commandsMap.Add("LOGIN", LOGIN);
         }
 
         public void Start()
         {
+            register = new Register();
+            register.Load();
             stopped = false;
             Console.WriteLine("Сервер {0} запущен!", name);
             listener = new TcpListener(IPAddress.Any, 666);
@@ -47,7 +52,7 @@ namespace ChatServer
                 users.Add(user);
                 user.name += users.Count();
                 Thread thread = new Thread(() =>
-                { 
+                {
                     Console.WriteLine("Подключен клиент: {0}",
                         user.client.Client.RemoteEndPoint.ToString());
                     string date = DateTime.Now.Date.ToLongDateString();
@@ -83,7 +88,8 @@ namespace ChatServer
                             }
                             catch
                             {
-                                SendMessage(user, "ERROR 001");
+                                SendError(user, "001");
+                                Console.WriteLine("Неверный формат: " + mess);
                             }
                         }
                         else
@@ -94,7 +100,7 @@ namespace ChatServer
                             }
                             catch
                             {
-                                SendMessage(user, "ERROR 001");
+                                SendError(user, "001");
                             }
                         }
                     }
@@ -106,7 +112,7 @@ namespace ChatServer
 
         public void Stop()
         {
-            SendMessage("ERROR 100");
+            SendError("100");
             foreach (User user in users)
             {
                 user.client.Close();
@@ -173,6 +179,16 @@ namespace ChatServer
                     }
                 }
             }
+        }
+
+        void SendError(User user, string code)
+        {
+            SendMessage(user, "ERROR " + code);
+        }
+
+        void SendError(string code)
+        {
+            SendMessage("ERROR " + code);
         }
 
         User FindUserByName(string name)

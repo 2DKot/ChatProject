@@ -54,7 +54,7 @@ namespace ChatServer
 
         private void lHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Server was developed by Baydin 2DKot Konstantin");
+            MessageBox.Show("Server was developed by Baydin 2DKot Konstantin.\nKrasnodar. 2015.");
         }
 
     }

@@ -21,7 +21,7 @@ namespace ChatServer
                     }
                     catch
                     {
-                        SendMessage(user, "ERROR 002");
+                        SendError(user, "002");
                     }
                 }
             }
@@ -30,15 +30,15 @@ namespace ChatServer
         void NICK(User user, string prms)
         {
             string newName = prms.Split(' ')[0];
-            if (FindUserByName(newName) != null)
+            if (FindUserByName(newName) != null || register.Contains(newName))
             {
-                SendMessage(user, "ERROR 051");
+                SendError(user, "051");
                 return;
             }
             Console.WriteLine(user.name + " changed nick to " + newName);
             SendMessage(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
-            SendMessage(user, "ERROR 050");
+            SendError(user, "050");
             SendNamesToAll();
         }
 
@@ -47,7 +47,7 @@ namespace ChatServer
             int splitter = prms.IndexOf(' ');
             if (splitter == -1)
             {
-                SendMessage(user, "ERROR 001");
+                SendError(user, "001");
                 return;
             }
             string targetName = prms.Substring(0, splitter);
@@ -56,7 +56,7 @@ namespace ChatServer
             string formattedMessage = "PRIVMSG " + user.name + ": " + message;
             if (target == null)
             {
-                SendMessage(user, "ERROR 003");
+                SendError(user, "003");
                 return;
             }
             try
@@ -65,7 +65,7 @@ namespace ChatServer
             }
             catch
             {
-                SendMessage(user, "ERROR 002");
+                SendError(user, "002");
                 return;
             }
             SendMessage(user, formattedMessage);
@@ -84,6 +84,37 @@ namespace ChatServer
         void DATE(User user, string prms)
         {
             SendMessage(user, "MSG "+DateTime.Now.Date.ToLongDateString());
+        }
+
+        void REG(User user, string prms)
+        {
+            string[] splitted = prms.Split(' ');
+            if (register.Add(splitted[0], splitted[1]))
+            {
+                SendError(user, "053");
+                register.Save();
+            }
+            else
+            {
+                SendError(user, "051");
+            }
+        }
+
+        void LOGIN(User user, string prms)
+        {
+            string[] splitted = prms.Split(' ');
+            string name = splitted[0];
+            string password = splitted[1];
+            if (register.Contains(name) && register.Check(name, password))
+            {
+                user.name = name;
+                SendError(user, "055");
+                SendNamesToAll();
+            }
+            else
+            {
+                SendError(user, "054");
+            }
         }
     }
 }
