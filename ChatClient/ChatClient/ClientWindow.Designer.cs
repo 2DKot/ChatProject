@@ -147,7 +147,9 @@
             this.NickNamesListBox.Name = "NickNamesListBox";
             this.NickNamesListBox.Size = new System.Drawing.Size(115, 199);
             this.NickNamesListBox.TabIndex = 11;
+            this.NickNamesListBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.NickNamesListBox_MouseClick);
             this.NickNamesListBox.SelectedIndexChanged += new System.EventHandler(this.NickNamesListBox_SelectedIndexChanged);
+            this.NickNamesListBox.DataSourceChanged += new System.EventHandler(this.NickNamesListBox_DataSourceChanged);
             // 
             // label1
             // 

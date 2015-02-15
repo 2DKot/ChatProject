@@ -10,23 +10,22 @@ using System.Windows.Forms;
 
 namespace ChatClient
 {
-    class User
+    class Client
     {
-        //Dict: Service Code to Instance of Delegate
         TcpClient clientToServer;
         NetworkStream nStream;
-        static User instance;
+        static Client instance;
         public List<string> listOfNickNames;
         
-        public static User GetInstance()
+        public static Client GetInstance()
         {
             if (instance == null)
             {
-                instance = new User();
+                instance = new Client();
             }
             return instance;
         }
-        private User()
+        private Client()
         {
             listOfNickNames = new List<string>();
 
@@ -65,7 +64,7 @@ namespace ChatClient
         public void LogIn(string ip, int port)
         {
             IPEndPoint remoteIEP = this.GetIEP(ip, port);
-            this.clientToServer = User.GetNewTCPClient();
+            this.clientToServer = Client.GetNewTCPClient();
             this.nStream = this.GetNetworkStream(remoteIEP);
             if (this.nStream == null)
             {
@@ -152,7 +151,7 @@ namespace ChatClient
             { 
                 return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";
             }
-            return Actions.commandToHandler[command](restParameters);
+            return Reactions.commandToHandler[command](restParameters);
         }
         static private byte[] StringToBytes(string text)
         {

@@ -8,11 +8,11 @@ namespace ChatClient
 {
     delegate string reactionOfServer();
     delegate string transformationText(string restParameters);
-    static class Actions
+    static class Reactions
     {
         static public Dictionary<int, reactionOfServer> serviceCodeToDefinition = new Dictionary<int, reactionOfServer>();
         static public Dictionary<string, transformationText> commandToHandler = new Dictionary<string, transformationText>();
-        static Actions()
+        static Reactions()
         {
             serviceCodeToDefinition.Add(1, ErrorIncorrectFormatOfMessage);
             serviceCodeToDefinition.Add(2, UnknownErrorOfSendingMessage);
@@ -60,7 +60,7 @@ namespace ChatClient
 
         static private string MSG(string restParameters)
         {
-            return ("Всем от " + restParameters);
+            return (restParameters);
         }
         static private string PRIVMSG(string restParameters)
         {
@@ -82,7 +82,7 @@ namespace ChatClient
         }
         static private string NAMES(string restParameters)
         {
-            User.GetInstance().listOfNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
+            Client.GetInstance().listOfNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
             return "Обновление списка пользователей.";
         }
     }
