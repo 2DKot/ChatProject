@@ -18,49 +18,25 @@ namespace ChatClient
         private delegate void voidDel();
         private static Thread ConnectionThread;
         private static Thread GettingMessagesThread;
-        private static object selectedNick;
         private static bool clientIsConnected;
-        private static bool itWasRefreshingNicks = false;
-        readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
+        private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
         public ClientWindow()
         {
             InitializeComponent();
-            selectedNick = new object();
             this.IPAdressTextBox.Text = "192.168.";
         }
-
-        private void TypingBox_TextChanged(object sender, EventArgs e)
-        {
-            if (selectedNick != null)
-            {
-                string thisNick = selectedNick.ToString();
-                string comparedText = this.TypingBox.Text;
-                if (comparedText.Length > thisNick.Length)
-                {
-                    comparedText = comparedText.Substring(0, thisNick.Length);
-                    if (!String.Equals(thisNick, comparedText))
-                    {
-                        selectedNick = null;
-                    }
-                }
-                else
-                {
-                    selectedNick = null;
-                }
-            }
-        }
-
         private void SendButton_Click(object sender, EventArgs e)
         {
             try
             {
 
-                string sendingMessage = this.TypingBox.Text;
+                string typedText = this.TypingBox.Text;
+                string[] sendingMessages = null;
                 if (this.DebugCheckBox.Checked == false)
                 {
-                    sendingMessage = MapMessage(sendingMessage);
+                    sendingMessages = MapMessage(typedText);
                 }
-                Client.GetInstance().SendText(sendingMessage);
+                Client.GetInstance().SendText(sendingMessages);
             }
             catch (Exception exc)
             {
@@ -85,7 +61,7 @@ namespace ChatClient
                     string ipAdrs = this.IPAdressTextBox.Text;
                     int port = Convert.ToInt32(this.PortTextBox.Text);
                     Client.GetInstance().LogIn(ipAdrs, port);
-                    /*newMessage = Client.GetInstance().GetMessage();*/
+                    newMessage = Client.GetInstance().GetMessage();
                     this.Invoke(new strDel(AddTextInChatBox), newMessage);
                     clientIsConnected = true;
                     this.EnableGettingNewInformation();
@@ -103,7 +79,8 @@ namespace ChatClient
 
             if ( IsConnectingThreadWorking || IsGettingMessagesThreadWorking )
             {
-                MessageBox.Show("Подключение в процессе. Пожалуйста, дождитесь результата.", "Подключение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Подключение в процессе. Пожалуйста, дождитесь результата.",
+                    "Подключение", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else if (! IsConnectingThreadWorking && ! IsGettingMessagesThreadWorking)
             {
@@ -114,6 +91,7 @@ namespace ChatClient
         {
             clientIsConnected = false;
             Client.GetInstance().LogOut();
+            Client.GetInstance().ownNickName = "";
             this.Invoke(new strListDel(RefreshNickNamesListBox), new List<string>());
             this.Invoke(new voidDel(ActivateConnectButton));
         }
@@ -148,6 +126,7 @@ namespace ChatClient
         private void AddTextInChatBox(string text)
         {
             this.RTMainChatBox.AppendText(text + Environment.NewLine);
+            this.RTMainChatBox.ScrollToCaret();
         }
         /*
         private void AddTextInChatBox(string text, Style type)
@@ -198,39 +177,36 @@ namespace ChatClient
         {
             try
             {
-                DoRequestNickName();
+                GuestNickNameTextBox.Text.Trim();
+                string newNick = GuestNickNameTextBox.Text;
+                DoRequestTempNickName(newNick);
+                Client.GetInstance().ownNickName = newNick;
             }
             catch (ArgumentException exc)
             {
                 MessageBox.Show("Ник-нейм не должен состоять из нескольких слов, которые отделены пробелом.",
                     "Некорретный ник-нейм", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Client.GetInstance().ownNickName = "";
             }
             catch (Exception exc)
             {
                 MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу: \r\n" + exc.Message,
                             "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Client.GetInstance().ownNickName = "";
             }
         }
-        private void DoRequestNickName()
+        private void DoRequestTempNickName(string nickName)
         {
-
-            NickNameTextBox.Text.Trim();
-            string newNick = NickNameTextBox.Text;
-            if (NickNameTextBox.Text.Length != 0 && this.IsCorrectNick(newNick))
+            if (GuestNickNameTextBox.Text.Length != 0 && Client.IsCorrectNick(nickName))
             {
-                Client.GetInstance().RequestToChangeNickName(newNick);
+                Client.GetInstance().RequestToChangeNickName(nickName);
             }
             else
             {
                 throw new ArgumentException();
             }
         }
-        private bool IsCorrectNick(string nick)
-        {
-            bool flagSpaceSymbol = (nick.IndexOf(' ') != -1);
-
-            return !(flagSpaceSymbol);
-        }
+        
         private void RefreshNickNamesListBox (List<string> nicks)
         {
             this.NickNamesListBox.DataSource = nicks;
@@ -245,34 +221,40 @@ namespace ChatClient
                 this.ConnectButton.Enabled = false;
                 this.DisconnectButton.Enabled = true;
         }
-        private void NickNamesListBox_SelectedIndexChanged(object sender, EventArgs e)
+        private bool GettersPanelHasButtons()
         {
-            if (!itWasRefreshingNicks && this.NickNamesListBox.SelectedItem != null)
-            {
-                selectedNick = this.NickNamesListBox.SelectedItem;
-                this.Invoke(new strDel(DirectMessageToNickNameInTypingBox), selectedNick.ToString());
-            }            
+            Button temp = new Button();
+            temp.Name = "Отправить всем";
+            temp.Text = "Всем";
+            return (this.GettersFlowLayoutPanel.Controls != null && !this.GettersFlowLayoutPanel.Controls.ContainsKey(temp.Name));
         }
-        private void DirectMessageToNickNameInTypingBox (string text)
+        private string[] MapMessage(string text)
         {
-            this.TypingBox.Clear();
-            this.TypingBox.AppendText(text + ": ");
-        }
-        private static string MapMessage(string text)
-        {
-            if (selectedNick != null)
+            
+            string[] discreteMessages = null;
+            if (this.GettersPanelHasButtons())
             {
-                return ("PRIVMSG " + text.Remove(selectedNick.ToString().Length, 1));
-            }   
+                int quantityOfButtons = this.GettersFlowLayoutPanel.Controls.Count;
+                discreteMessages = new string[quantityOfButtons];
+                int i = 0;
+                foreach (Button thisButton in this.GettersFlowLayoutPanel.Controls)
+                {
+                    discreteMessages[i] = "PRIVMSG " + thisButton.Name + " " + text;
+                    i++;
+                }
+            }
             else
             {
-                return ("MSG " + text);
+                discreteMessages = new string[] {"MSG " + text};
             }
+            return discreteMessages;
         }
         private void PrepareFormToTyping()
         {
             this.NickNamesListBox.SelectedItem = null;
             this.TypingBox.Text = "";
+            this.GettersFlowLayoutPanel.Controls.Clear();
+            this.GettersFlowLayoutPanel.Controls.Add(ClientWindow.CreateButtonForGetters("Отправить всем"));
         }
 
         private void ClientWindow_FormClosing(object sender, FormClosingEventArgs e)
@@ -283,19 +265,138 @@ namespace ChatClient
             }
             catch { }
         }
-
+        /*
         private void NickNamesListBox_DataSourceChanged(object sender, EventArgs e)
         {
-            itWasRefreshingNicks = true;
             this.NickNamesListBox.SelectedItem = null;
-        }
-
-        private void NickNamesListBox_MouseClick(object sender, MouseEventArgs e)
+        }*/
+        private static Button CreateButtonForGetters(string nameOfGetter)
         {
-            object item = this.NickNameTextBox.GetChildAtPoint(e.Location);
-            ClientWindow.itWasRefreshingNicks = false;
-            this.NickNamesListBox_SelectedIndexChanged(sender, e);
+            Button rButtton = new Button();
+            if (nameOfGetter == "Отправить всем")
+            {
+                rButtton.Text = "Всем";
+            }
+            else
+            {
+                rButtton.Text = nameOfGetter;
+            }
+            rButtton.Name = nameOfGetter;
+            return rButtton;
         }
+        private void AddNewGetterInGettersPanel()
+        {
+            if (this.NickNamesListBox.SelectedItem != null)
+            {
+                string selectedNickName = this.NickNamesListBox.SelectedItem.ToString();
+                bool ownNickNameFlag = (selectedNickName == Client.GetInstance().ownNickName);
+                if (!ownNickNameFlag)
+                {
+                    bool toAllFlag = (this.GettersFlowLayoutPanel.Controls.ContainsKey("Отправить всем") || selectedNickName == "Отправить всем");
+                    if (toAllFlag)
+                    {
+                        this.GettersFlowLayoutPanel.Controls.Clear();
+                    }
+                    bool itHasSameNickFlag = this.GettersFlowLayoutPanel.Controls.ContainsKey(selectedNickName);
+                    if (!itHasSameNickFlag)
+                    {
+                        Button newGetter = ClientWindow.CreateButtonForGetters(selectedNickName);
+                        if (selectedNickName != "Отправить всем")
+                        {
+                            newGetter.Click += GetterButton_Click;
+                        }
+                        this.GettersFlowLayoutPanel.Controls.Add(newGetter);
+                    }
+                }
+            }
+        }
+        private void GetterButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Button clickedButton = (Button)sender;
+                this.RemoveGetter(clickedButton);
+                if (this.GettersFlowLayoutPanel.Controls.Count == 0)
+                {
+                    this.GettersFlowLayoutPanel.Controls.Add(CreateButtonForGetters("Отправить всем"));
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("Невозможно удалить получателя", "Ошибка аргумента");
+            }
 
+        }
+        private void RemoveGetter(Button rmvButton)
+        {
+            try
+            {
+                this.GettersFlowLayoutPanel.Controls.Remove(rmvButton);
+            }
+            catch
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+        }
+        private void AddNewGetterButton_Click(object sender, EventArgs e)
+        {
+            AddNewGetterInGettersPanel();
+        }
+        private void RegisterNewLogin(string regLogin, string regPassword)
+        {
+            Client.GetInstance().SendText("REG " + regLogin + " " + regPassword);
+        }
+        private void RegisterButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string regLogin = this.RegLoginTextBox.Text.Trim();
+                string regPass = this.RegPasswordTextBox.Text;
+                if (Client.IsCorrectNick(regLogin) && Client.IsCorrectPassword(regPass))
+                {
+                    RegisterNewLogin(regLogin, regPass);
+                }
+
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Невозможно зарегистрировать пользователя. Обратите внимание на соединение. Подробная информация: " + exc.Message,
+                    "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
+            finally
+            {
+                this.RegLoginTextBox.Clear();
+                this.RegPasswordTextBox.Clear();
+            }
+        }
+        private void LogIn(string login, string password)
+        {
+            Client.GetInstance().SendText("LOGIN " + login + " " + password);
+        }
+        private void LogInButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string tempLogin = this.LoginTextBox.Text.Trim();
+                string tempPass = this.PasswordTextBox.Text;
+                if (Client.IsCorrectNick(tempLogin) && Client.IsCorrectPassword(tempPass))
+                {
+                    LogIn(tempLogin, tempPass);
+                }
+                Client.GetInstance().ownNickName = tempLogin;
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Невозможно авторизовать пользователя. Обратите внимание на соединение. Подробная информация: " + exc.Message,
+                    "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                Client.GetInstance().ownNickName = "";
+            }
+            finally
+            {
+                this.LoginTextBox.Clear();
+                this.PasswordTextBox.Clear();
+            }
+        }
     }
 }

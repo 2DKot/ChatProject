@@ -16,7 +16,7 @@ namespace ChatClient
         NetworkStream nStream;
         static Client instance;
         public List<string> listOfNickNames;
-        
+        public string ownNickName;
         public static Client GetInstance()
         {
             if (instance == null)
@@ -46,6 +46,19 @@ namespace ChatClient
         static private TcpClient GetNewTCPClient()
         {
             return (new TcpClient());
+        }
+        
+        public static bool IsCorrectNick(string nick)
+        {
+            bool flagSpaceSymbol = (nick.IndexOf(' ') != -1);
+
+            return !(flagSpaceSymbol);
+        }
+        public static bool IsCorrectPassword(string password)
+        {
+            bool flagSpaceSymbol = (password.IndexOf(' ') != -1);
+
+            return !(flagSpaceSymbol);
         }
         private NetworkStream GetNetworkStream(IPEndPoint remoteIEP)
         {
@@ -103,6 +116,17 @@ namespace ChatClient
                 throw new SocketException();
             }
             
+        }
+        public void SendText(string[] messages)
+        {
+            if (messages == null || messages.Length == 0)
+            {
+                throw new ArgumentException();
+            }
+            foreach (string currentMessage in messages)
+            {
+                SendText(currentMessage);
+            }
         }
         public string GetMessage()
         {
