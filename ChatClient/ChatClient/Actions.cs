@@ -20,12 +20,28 @@ namespace ChatClient
             serviceCodeToDefinition.Add(50, NickHasChangedSuccesful);
             serviceCodeToDefinition.Add(51, ErrorTheNickIsUsed);
             serviceCodeToDefinition.Add(52, ErrorTheNickIsIncorrect);
+            serviceCodeToDefinition.Add(53, NickWasSuccessfullyRegistered);
+            serviceCodeToDefinition.Add(54, UnregisteredNickOrInvalidPassword);
+            serviceCodeToDefinition.Add(55, LogInWasSuccessfully);
             serviceCodeToDefinition.Add(100, ErrorServerIsGoingToStop);
             //*****************************//
             commandToHandler.Add("MSG", MSG);
             commandToHandler.Add("ERROR", ERROR);
             commandToHandler.Add("PRIVMSG", PRIVMSG);
             commandToHandler.Add("NAMES", NAMES);
+        }
+        static private string LogInWasSuccessfully()
+        {
+            return "Успешная авторизация.";
+        }
+        static private string UnregisteredNickOrInvalidPassword()
+        {
+            Client.GetInstance().ownNickName = "";
+            return "Неверный пароль или логин.";
+        }
+        static private string NickWasSuccessfullyRegistered()
+        {
+            return "Ник был удачно зарегестрирован.";
         }
         static private string ErrorIncorrectFormatOfMessage()
         {
@@ -49,7 +65,7 @@ namespace ChatClient
         }
         static private string ErrorTheNickIsIncorrect()
         {
-            return "Данный ник-нейм не соответствует правилам сервера";
+            return "Данный ник-нейм не соответствует правилам сервера.";
         }
         static private string ErrorServerIsGoingToStop()
         {
@@ -70,7 +86,7 @@ namespace ChatClient
         }
         static private string ERROR(string restParameters)
         {
-            string UndefinedError = "Ошибка неизвестного вида";
+            string UndefinedError = "Ошибка неизвестного вида.";
             int numberOfError = 0;
             try
             {
@@ -80,9 +96,16 @@ namespace ChatClient
             catch { }
             return UndefinedError;
         }
+        static private string HELLO(string restParameters)
+        {
+            Client.GetInstance().ownNickName = restParameters;
+            return "Сервер Вас приветствует, " + restParameters + "!";
+        }
         static private string NAMES(string restParameters)
         {
-            Client.GetInstance().listOfNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
+            List<string> newNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
+            newNickNames.Insert(0, "Отправить всем");
+            Client.GetInstance().listOfNickNames = newNickNames;
             return "Обновление списка пользователей.";
         }
     }
