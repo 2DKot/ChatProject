@@ -29,17 +29,13 @@ namespace ChatServer
 
         void NICK(User user, string prms)
         {
-            string newName = prms.Split(' ')[0];
-            if (FindUserByName(newName) != null || register.Contains(newName))
-            {
-                SendError(user, "051");
-                return;
-            }
+            string newName = rndNick.GetNew();
             Console.WriteLine(user.name + " changed nick to " + newName);
             SendMessage(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
             SendError(user, "050");
             SendNamesToAll();
+            SendMessage(user, "YOUARE " + user.name);
         }
 
         void PRIVMSG(User user, string prms)
@@ -115,6 +111,11 @@ namespace ChatServer
             {
                 SendError(user, "054");
             }
+        }
+
+        void WHOIAM(User user, string prms)
+        {
+            SendMessage(user, "YOUARE " + user.name);
         }
     }
 }

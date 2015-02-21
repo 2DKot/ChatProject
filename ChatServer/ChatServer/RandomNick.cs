@@ -10,13 +10,19 @@ namespace ChatServer
         List<string> names = new List<string>() {
             "Жыраф",
             "Креведко",
-            "Медвед"
+            "Медвед",
+            "Ниндзя",
+            "Школоло",
+            "Панда",
+            "Панк"
         };
 
         List<string> adjectivies = new List<string>() {
             "Упоротый",
             "Весёлый",
-            "Отважный"
+            "Отважный",
+            "Гламурный",
+            "Чоткий"
         };
 
         HashSet<string> takedNicks = new HashSet<string>();
@@ -27,8 +33,11 @@ namespace ChatServer
             string nick;
             do
             {
-                nick = adjectivies[rnd.Next(names.Count)] + names[rnd.Next(names.Count)];
+                int adI = rnd.Next(adjectivies.Count);
+                int nameID = rnd.Next(names.Count);
+                nick = adjectivies[adI] + names[nameID];
             } while (takedNicks.Contains(nick));
+            takedNicks.Add(nick);
             return nick;
         }
     }

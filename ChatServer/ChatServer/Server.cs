@@ -29,6 +29,7 @@ namespace ChatServer
             commandsMap.Add("DATE", DATE);
             commandsMap.Add("REG", REG);
             commandsMap.Add("LOGIN", LOGIN);
+            commandsMap.Add("WHOIAM", WHOIAM);
         }
 
         public void Start()
@@ -63,6 +64,7 @@ namespace ChatServer
                     name, date));
                 SendMessage("MSG " + user.name + " присоединился к чату.");
                 SendNamesToAll();
+                SendMessage(user, "YOUARE " + user.name);
                 while (!stopped)
                 {
                     string mess = "";
