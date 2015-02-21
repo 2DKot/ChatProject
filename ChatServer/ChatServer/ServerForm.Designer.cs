@@ -90,6 +90,7 @@
             this.lHelp.Name = "lHelp";
             this.lHelp.Size = new System.Drawing.Size(13, 13);
             this.lHelp.TabIndex = 6;
+            this.lHelp.Tag = "";
             this.lHelp.Text = "?";
             this.lHelp.Click += new System.EventHandler(this.lHelp_Click);
             // 
