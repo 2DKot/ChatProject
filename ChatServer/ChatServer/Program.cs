@@ -11,7 +11,6 @@ namespace ChatServer
     {
         static void Main(string[] args)
         {
-            Console.WindowHeight /= 2;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new ServerForm());

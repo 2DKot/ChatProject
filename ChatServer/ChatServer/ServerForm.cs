@@ -33,25 +33,35 @@ namespace ChatServer
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                     lIP.Text += ip.ToString();
             }
-
+            lState.BackColor = Color.IndianRed;
         }
 
         private void bStartServer_Click(object sender, EventArgs e)
         {
+            bStartServer.Enabled = false;
             server.name = tbServerName.Text;
             serverThread = new Thread(server.Start);
             serverThread.Start();
-            bStartServer.Enabled = false;
+            bStartServer.Visible = false;
+            bStopServer.Visible = true;
             bStopServer.Enabled = true;
+            this.Text = "ChatServer (online)";
+            lState.BackColor = Color.PaleGreen;
+            lState.Text = "online";
         }
 
         private void bStopServer_Click(object sender, EventArgs e)
         {
+            bStopServer.Enabled = false;
             if (server == null) return;
             server.Stop();
             serverThread.Join();
+            bStartServer.Visible = true;
             bStartServer.Enabled = true;
-            bStopServer.Enabled = false;
+            bStopServer.Visible = false;
+            this.Text = "ChatServer";
+            lState.BackColor = Color.IndianRed;
+            lState.Text = "offline";
         }
 
         private void lHelp_Click(object sender, EventArgs e)
@@ -119,6 +129,11 @@ namespace ChatServer
             {
                 Log.Delete();
             }
+        }
+
+        private void ServerForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            server.Stop();
         }
     }
 }

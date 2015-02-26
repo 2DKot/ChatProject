@@ -133,8 +133,8 @@ namespace ChatServer
                 }
                 users.Clear();
             }
-            listener.Stop();
-            stopped = true;  
+            if (listener != null) listener.Stop();
+            stopped = true;
         }
 
         string GetNextMessage(NetworkStream ns)
