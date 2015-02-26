@@ -8,7 +8,7 @@ namespace ChatServer
 {
     class User
     {
-        public string name = "noname";
+        public string name;
         public TcpClient client;
         public User(TcpClient client)
         {

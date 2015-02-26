@@ -24,11 +24,13 @@ namespace ChatServer
         private void ServerForm_Load(object sender, EventArgs e)
         {
             server = new Server();
+            server.users.listChangedHandler += UserListChanged;
+            Log.LogEvent += LogUpdated;
             IPHostEntry host;
             host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (IPAddress ip in host.AddressList)
             {
-                if(ip.AddressFamily == AddressFamily.InterNetwork)
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
                     lIP.Text += ip.ToString();
             }
 
@@ -54,8 +56,69 @@ namespace ChatServer
 
         private void lHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Server was developed by Baydin 2DKot Konstantin.\nKrasnodar. 2015.");
+            MessageBox.Show("Server was developed by Baydin (2DKot) Konstantin.\nKubSTU. 2015.");
         }
 
+        void UserListChanged(List<User> users)
+        {
+            this.Invoke(new Action<List<User>>(UpdateUserList), users);
+
+        }
+
+        void UpdateUserList(List<User> users)
+        {
+            lbUsers.Items.Clear();
+            foreach (User user in users)
+            {
+                lbUsers.Items.Add(user.name + " " + user.client.Client.RemoteEndPoint.ToString());
+            }
+        }
+
+        void LogUpdated(string msg)
+        {
+            this.Invoke(new Action<string>(UpdateLog), msg);
+        }
+
+        void UpdateLog(string msg)
+        {
+            tbLog.AppendText(msg + "\r\n");
+        }
+        
+        private void bKick_Click(object sender, EventArgs e)
+        {
+            if (lbUsers.SelectedIndex < 0) return;
+            User user = server.users[lbUsers.SelectedIndex];
+            lock (server.users) server.users.Remove(user);
+            user.client.Close();
+        }
+
+        private void bSendToAll_Click(object sender, EventArgs e)
+        {
+            string msg = tbMessage.Text;
+            if (!cbDebug.Checked) msg = "MSG " + msg;
+            server.SendMessage(msg);
+        }
+
+        private void bSendToCurrent_Click(object sender, EventArgs e)
+        {
+            if (lbUsers.SelectedIndex < 0) return;
+            string msg = tbMessage.Text;
+            if (!cbDebug.Checked) msg = "MSG " + msg;
+            server.SendMessage(server.users[lbUsers.SelectedIndex], msg);
+        }
+
+        private void bClearLog_Click(object sender, EventArgs e)
+        {
+            tbLog.Clear();
+        }
+
+        private void bDeleteLogFile_Click(object sender, EventArgs e)
+        {
+            DialogResult res = MessageBox.Show("Вы уверены?", "Одумайся!", MessageBoxButtons.YesNo);
+            if (res == System.Windows.Forms.DialogResult.Yes)
+            {
+                Log.Delete();
+            }
+        }
     }
 }

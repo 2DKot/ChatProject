@@ -10,7 +10,7 @@ namespace ChatServer
         void MSG(User user, string prms)
         {
             string message = "MSG " + user.name + ": " + prms;
-            Console.WriteLine("Send to all: " + message);
+            //Log.Write("Send to all: " + message);
             lock (users)
             {
                 foreach (User target in users)
@@ -29,13 +29,15 @@ namespace ChatServer
 
         void NICK(User user, string prms)
         {
+            rndNick.Remove(user.name);
             string newName = rndNick.GetNew();
-            Console.WriteLine(user.name + " changed nick to " + newName);
+            Log.Write(user.name + " changed nick to " + newName);
             SendMessage(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
             SendError(user, "050");
             SendNamesToAll();
             SendMessage(user, "YOUARE " + user.name);
+            users.OnListChanged();
         }
 
         void PRIVMSG(User user, string prms)
@@ -106,11 +108,14 @@ namespace ChatServer
                 user.name = name;
                 SendError(user, "055");
                 SendNamesToAll();
+                SendMessage(name + " вернулся к нам!");
+                Log.Write(name + " зашёл.");
+                users.OnListChanged();
             }
             else
             {
                 SendError(user, "054");
-            }
+            }        
         }
 
         void WHOIAM(User user, string prms)

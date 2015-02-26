@@ -8,16 +8,18 @@ using System.Threading;
 
 namespace ChatServer
 {
+
     partial class Server
     {
         public string name;
-        List<User> users = new List<User>();
+        public UserList users = new UserList();
         delegate void command(User user, string prms);
         Dictionary<string, command> commandsMap = new Dictionary<string, command>();
         TcpListener listener;
         bool stopped;
         Register register;
         RandomNick rndNick = new RandomNick();
+
 
         public Server(string name = "chatServer")
         {
@@ -37,19 +39,26 @@ namespace ChatServer
             register = new Register();
             register.Load();
             stopped = false;
-            Console.WriteLine("Сервер {0} запущен!", name);
+            Log.Write("Сервер " + name + " запущен!");
             listener = new TcpListener(IPAddress.Any, 666);
             listener.Start();
             while (!stopped)
             {
                 User user;
-                user = new User(listener.AcceptTcpClient());
-                users.Add(user);
+                try
+                {
+                    user = new User(listener.AcceptTcpClient());
+                }
+                catch (SocketException)
+                {
+                    return;
+                }
                 user.name = rndNick.GetNew();
+                users.Add(user);
                 Thread clientThread = new Thread(new ParameterizedThreadStart(ClientThread));
                 clientThread.Start(user);
             }
-            Console.WriteLine("Я закрылся!");
+            Log.Write("Сервер остановлен!");
         }
 
         void ClientThread(Object userObject)
@@ -57,8 +66,8 @@ namespace ChatServer
             User user = (User)userObject;
             Thread thread = new Thread(() =>
             {
-                Console.WriteLine("Подключен клиент: {0}",
-                    user.client.Client.RemoteEndPoint.ToString());
+                Log.Write(String.Format("Подключен клиент: {0}",
+                    user.client.Client.RemoteEndPoint.ToString()));
                 string date = DateTime.Now.Date.ToLongDateString();
                 SendMessage(user, String.Format("MSG Тебя приветствует сервер {0}! Время на сервере: {1}",
                     name, date));
@@ -74,9 +83,8 @@ namespace ChatServer
                     }
                     catch
                     {
-                        Console.WriteLine("Ошибка получения сообщения!");
-                        Console.WriteLine("Подключение с {0} будет разорвано!",
-                            user.name);
+                        Log.Write(String.Format("Ошибка получения сообщения! "
+                            + "Подключение с {0} будет разорвано!", user.name));
                         lock (users) users.Remove(user);
                         user.client.Close();
                         SendNamesToAll();
@@ -94,7 +102,7 @@ namespace ChatServer
                         catch
                         {
                             SendError(user, "001");
-                            Console.WriteLine("Неверный формат: " + mess);
+                            Log.Write("Неверный формат: " + mess);
                         }
                     }
                     else
@@ -115,14 +123,18 @@ namespace ChatServer
 
         public void Stop()
         {
+            Log.Write("Остановка..");
             SendError("100");
-            foreach (User user in users)
+            lock (users)
             {
-                user.client.Close();
+                foreach (User user in users)
+                {
+                    user.client.Close();
+                }
+                users.Clear();
             }
             listener.Stop();
-            stopped = true;
-            Console.WriteLine("Сервер был закрыт");
+            stopped = true;  
         }
 
         string GetNextMessage(NetworkStream ns)
@@ -149,7 +161,7 @@ namespace ChatServer
             ns.Write(messageBuffer, 0, size);
         }
 
-        void SendMessage(User user, string message)
+        public void SendMessage(User user, string message)
         {
             try
             {
@@ -157,17 +169,17 @@ namespace ChatServer
             }
             catch
             {
-                Console.WriteLine("Ошибка отправки сообщения!");
-                Console.WriteLine("Подключение с {0} будет разорвано!", user.name);
+                Log.Write("Ошибка отправки сообщения " + message);
+                Log.Write("Подключение с " + user.name + " будет разорвано!");
                 lock (users) users.Remove(user);
                 user.client.Close();
                 return;
             }
         }
 
-        void SendMessage(string message)
+        public void SendMessage(string message)
         {
-            Console.WriteLine("Send to all: " + message);
+            //Console.WriteLine("Send to all: " + message);
             lock (users)
             {
                 foreach (User target in users)
@@ -178,7 +190,7 @@ namespace ChatServer
                     }
                     catch
                     {
-                        Console.WriteLine("Проблемка!");
+                        Log.Write("Проблемка!");
                     }
                 }
             }

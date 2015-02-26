@@ -40,5 +40,10 @@ namespace ChatServer
             takedNicks.Add(nick);
             return nick;
         }
+
+        public void Remove(string name)
+        {
+            takedNicks.Remove(name);
+        }
     }
 }

@@ -34,6 +34,19 @@
             this.bStopServer = new System.Windows.Forms.Button();
             this.lIP = new System.Windows.Forms.Label();
             this.lHelp = new System.Windows.Forms.Label();
+            this.lbUsers = new System.Windows.Forms.ListBox();
+            this.bKick = new System.Windows.Forms.Button();
+            this.tbMessage = new System.Windows.Forms.TextBox();
+            this.bSendToAll = new System.Windows.Forms.Button();
+            this.gbSendMessage = new System.Windows.Forms.GroupBox();
+            this.bSendToCurrent = new System.Windows.Forms.Button();
+            this.tbLog = new System.Windows.Forms.TextBox();
+            this.gbUsers = new System.Windows.Forms.GroupBox();
+            this.bClearLog = new System.Windows.Forms.Button();
+            this.cbDebug = new System.Windows.Forms.CheckBox();
+            this.bDeleteLogFile = new System.Windows.Forms.Button();
+            this.gbSendMessage.SuspendLayout();
+            this.gbUsers.SuspendLayout();
             this.SuspendLayout();
             // 
             // bStartServer
@@ -86,7 +99,7 @@
             // lHelp
             // 
             this.lHelp.AutoSize = true;
-            this.lHelp.Location = new System.Drawing.Point(251, 0);
+            this.lHelp.Location = new System.Drawing.Point(794, 0);
             this.lHelp.Name = "lHelp";
             this.lHelp.Size = new System.Drawing.Size(13, 13);
             this.lHelp.TabIndex = 6;
@@ -94,11 +107,126 @@
             this.lHelp.Text = "?";
             this.lHelp.Click += new System.EventHandler(this.lHelp_Click);
             // 
+            // lbUsers
+            // 
+            this.lbUsers.FormattingEnabled = true;
+            this.lbUsers.Location = new System.Drawing.Point(6, 17);
+            this.lbUsers.Name = "lbUsers";
+            this.lbUsers.Size = new System.Drawing.Size(276, 95);
+            this.lbUsers.TabIndex = 7;
+            // 
+            // bKick
+            // 
+            this.bKick.Location = new System.Drawing.Point(6, 118);
+            this.bKick.Name = "bKick";
+            this.bKick.Size = new System.Drawing.Size(75, 23);
+            this.bKick.TabIndex = 8;
+            this.bKick.Text = "Выпнуть!";
+            this.bKick.UseVisualStyleBackColor = true;
+            this.bKick.Click += new System.EventHandler(this.bKick_Click);
+            // 
+            // tbMessage
+            // 
+            this.tbMessage.Location = new System.Drawing.Point(6, 19);
+            this.tbMessage.Name = "tbMessage";
+            this.tbMessage.Size = new System.Drawing.Size(231, 20);
+            this.tbMessage.TabIndex = 9;
+            // 
+            // bSendToAll
+            // 
+            this.bSendToAll.Location = new System.Drawing.Point(6, 45);
+            this.bSendToAll.Name = "bSendToAll";
+            this.bSendToAll.Size = new System.Drawing.Size(112, 23);
+            this.bSendToAll.TabIndex = 10;
+            this.bSendToAll.Text = "Всем";
+            this.bSendToAll.UseVisualStyleBackColor = true;
+            this.bSendToAll.Click += new System.EventHandler(this.bSendToAll_Click);
+            // 
+            // gbSendMessage
+            // 
+            this.gbSendMessage.Controls.Add(this.cbDebug);
+            this.gbSendMessage.Controls.Add(this.bSendToCurrent);
+            this.gbSendMessage.Controls.Add(this.tbMessage);
+            this.gbSendMessage.Controls.Add(this.bSendToAll);
+            this.gbSendMessage.Location = new System.Drawing.Point(6, 147);
+            this.gbSendMessage.Name = "gbSendMessage";
+            this.gbSendMessage.Size = new System.Drawing.Size(276, 103);
+            this.gbSendMessage.TabIndex = 11;
+            this.gbSendMessage.TabStop = false;
+            this.gbSendMessage.Text = "Послать сообщение";
+            // 
+            // bSendToCurrent
+            // 
+            this.bSendToCurrent.Location = new System.Drawing.Point(125, 45);
+            this.bSendToCurrent.Name = "bSendToCurrent";
+            this.bSendToCurrent.Size = new System.Drawing.Size(112, 23);
+            this.bSendToCurrent.TabIndex = 11;
+            this.bSendToCurrent.Text = "Выделенному";
+            this.bSendToCurrent.UseVisualStyleBackColor = true;
+            this.bSendToCurrent.Click += new System.EventHandler(this.bSendToCurrent_Click);
+            // 
+            // tbLog
+            // 
+            this.tbLog.Location = new System.Drawing.Point(12, 81);
+            this.tbLog.Multiline = true;
+            this.tbLog.Name = "tbLog";
+            this.tbLog.ReadOnly = true;
+            this.tbLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.tbLog.Size = new System.Drawing.Size(487, 194);
+            this.tbLog.TabIndex = 12;
+            this.tbLog.TabStop = false;
+            // 
+            // gbUsers
+            // 
+            this.gbUsers.Controls.Add(this.lbUsers);
+            this.gbUsers.Controls.Add(this.bKick);
+            this.gbUsers.Controls.Add(this.gbSendMessage);
+            this.gbUsers.Location = new System.Drawing.Point(505, 9);
+            this.gbUsers.Name = "gbUsers";
+            this.gbUsers.Size = new System.Drawing.Size(291, 266);
+            this.gbUsers.TabIndex = 13;
+            this.gbUsers.TabStop = false;
+            this.gbUsers.Text = "Юзеры";
+            // 
+            // bClearLog
+            // 
+            this.bClearLog.Location = new System.Drawing.Point(175, 50);
+            this.bClearLog.Name = "bClearLog";
+            this.bClearLog.Size = new System.Drawing.Size(99, 23);
+            this.bClearLog.TabIndex = 14;
+            this.bClearLog.Text = "Очистить лог";
+            this.bClearLog.UseVisualStyleBackColor = true;
+            this.bClearLog.Click += new System.EventHandler(this.bClearLog_Click);
+            // 
+            // cbDebug
+            // 
+            this.cbDebug.AutoSize = true;
+            this.cbDebug.Location = new System.Drawing.Point(6, 80);
+            this.cbDebug.Name = "cbDebug";
+            this.cbDebug.Size = new System.Drawing.Size(88, 17);
+            this.cbDebug.TabIndex = 12;
+            this.cbDebug.Text = "Debug Mode";
+            this.cbDebug.UseVisualStyleBackColor = true;
+            // 
+            // bDeleteLogFile
+            // 
+            this.bDeleteLogFile.Location = new System.Drawing.Point(280, 50);
+            this.bDeleteLogFile.Name = "bDeleteLogFile";
+            this.bDeleteLogFile.Size = new System.Drawing.Size(126, 23);
+            this.bDeleteLogFile.TabIndex = 15;
+            this.bDeleteLogFile.Text = "Удалить файл лога";
+            this.bDeleteLogFile.UseVisualStyleBackColor = true;
+            this.bDeleteLogFile.Click += new System.EventHandler(this.bDeleteLogFile_Click);
+            // 
             // ServerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(267, 80);
+            this.ClientSize = new System.Drawing.Size(808, 287);
+            this.Controls.Add(this.bDeleteLogFile);
+            this.Controls.Add(this.bClearLog);
+            this.Controls.Add(this.gbUsers);
+            this.Controls.Add(this.tbLog);
             this.Controls.Add(this.lHelp);
             this.Controls.Add(this.lIP);
             this.Controls.Add(this.bStopServer);
@@ -108,6 +236,9 @@
             this.Name = "ServerForm";
             this.Text = "ChatServer";
             this.Load += new System.EventHandler(this.ServerForm_Load);
+            this.gbSendMessage.ResumeLayout(false);
+            this.gbSendMessage.PerformLayout();
+            this.gbUsers.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -121,5 +252,16 @@
         private System.Windows.Forms.Button bStopServer;
         private System.Windows.Forms.Label lIP;
         private System.Windows.Forms.Label lHelp;
+        private System.Windows.Forms.ListBox lbUsers;
+        private System.Windows.Forms.Button bKick;
+        private System.Windows.Forms.TextBox tbMessage;
+        private System.Windows.Forms.Button bSendToAll;
+        private System.Windows.Forms.GroupBox gbSendMessage;
+        private System.Windows.Forms.Button bSendToCurrent;
+        private System.Windows.Forms.TextBox tbLog;
+        private System.Windows.Forms.GroupBox gbUsers;
+        private System.Windows.Forms.Button bClearLog;
+        private System.Windows.Forms.CheckBox cbDebug;
+        private System.Windows.Forms.Button bDeleteLogFile;
     }
 }
