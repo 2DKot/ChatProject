@@ -53,18 +53,20 @@
             // 
             // bStartServer
             // 
+            this.bStartServer.BackgroundImage = global::ChatServer.Resource1.switcherOff;
+            this.bStartServer.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.bStartServer.Cursor = System.Windows.Forms.Cursors.Hand;
             this.bStartServer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bStartServer.Location = new System.Drawing.Point(12, 51);
+            this.bStartServer.Location = new System.Drawing.Point(24, 25);
             this.bStartServer.Name = "bStartServer";
-            this.bStartServer.Size = new System.Drawing.Size(75, 23);
+            this.bStartServer.Size = new System.Drawing.Size(52, 80);
             this.bStartServer.TabIndex = 1;
-            this.bStartServer.Text = "Старт";
             this.bStartServer.UseVisualStyleBackColor = false;
             this.bStartServer.Click += new System.EventHandler(this.bStartServer_Click);
             // 
             // tbServerName
             // 
-            this.tbServerName.Location = new System.Drawing.Point(12, 25);
+            this.tbServerName.Location = new System.Drawing.Point(101, 25);
             this.tbServerName.Name = "tbServerName";
             this.tbServerName.Size = new System.Drawing.Size(100, 20);
             this.tbServerName.TabIndex = 0;
@@ -73,7 +75,7 @@
             // lServerName
             // 
             this.lServerName.AutoSize = true;
-            this.lServerName.Location = new System.Drawing.Point(9, 9);
+            this.lServerName.Location = new System.Drawing.Point(98, 9);
             this.lServerName.Name = "lServerName";
             this.lServerName.Size = new System.Drawing.Size(74, 13);
             this.lServerName.TabIndex = 2;
@@ -81,12 +83,14 @@
             // 
             // bStopServer
             // 
+            this.bStopServer.BackgroundImage = global::ChatServer.Resource1.switcherOn;
+            this.bStopServer.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.bStopServer.Cursor = System.Windows.Forms.Cursors.Hand;
             this.bStopServer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bStopServer.Location = new System.Drawing.Point(12, 51);
+            this.bStopServer.Location = new System.Drawing.Point(24, 25);
             this.bStopServer.Name = "bStopServer";
-            this.bStopServer.Size = new System.Drawing.Size(75, 23);
+            this.bStopServer.Size = new System.Drawing.Size(52, 80);
             this.bStopServer.TabIndex = 3;
-            this.bStopServer.Text = "Стоп";
             this.bStopServer.UseVisualStyleBackColor = false;
             this.bStopServer.Visible = false;
             this.bStopServer.Click += new System.EventHandler(this.bStopServer_Click);
@@ -94,7 +98,7 @@
             // lIP
             // 
             this.lIP.AutoSize = true;
-            this.lIP.Location = new System.Drawing.Point(124, 28);
+            this.lIP.Location = new System.Drawing.Point(213, 28);
             this.lIP.Name = "lIP";
             this.lIP.Size = new System.Drawing.Size(45, 13);
             this.lIP.TabIndex = 5;
@@ -185,12 +189,12 @@
             // tbLog
             // 
             this.tbLog.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.tbLog.Location = new System.Drawing.Point(12, 81);
+            this.tbLog.Location = new System.Drawing.Point(12, 111);
             this.tbLog.Multiline = true;
             this.tbLog.Name = "tbLog";
             this.tbLog.ReadOnly = true;
             this.tbLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbLog.Size = new System.Drawing.Size(487, 194);
+            this.tbLog.Size = new System.Drawing.Size(487, 164);
             this.tbLog.TabIndex = 12;
             this.tbLog.TabStop = false;
             // 
@@ -209,7 +213,7 @@
             // bClearLog
             // 
             this.bClearLog.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bClearLog.Location = new System.Drawing.Point(242, 51);
+            this.bClearLog.Location = new System.Drawing.Point(102, 54);
             this.bClearLog.Name = "bClearLog";
             this.bClearLog.Size = new System.Drawing.Size(99, 23);
             this.bClearLog.TabIndex = 14;
@@ -220,7 +224,7 @@
             // bDeleteLogFile
             // 
             this.bDeleteLogFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.bDeleteLogFile.Location = new System.Drawing.Point(347, 51);
+            this.bDeleteLogFile.Location = new System.Drawing.Point(101, 83);
             this.bDeleteLogFile.Name = "bDeleteLogFile";
             this.bDeleteLogFile.Size = new System.Drawing.Size(126, 23);
             this.bDeleteLogFile.TabIndex = 15;
@@ -231,7 +235,7 @@
             // lState
             // 
             this.lState.AutoSize = true;
-            this.lState.Location = new System.Drawing.Point(93, 56);
+            this.lState.Location = new System.Drawing.Point(31, 9);
             this.lState.Name = "lState";
             this.lState.Size = new System.Drawing.Size(35, 13);
             this.lState.TabIndex = 16;

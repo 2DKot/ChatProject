@@ -16,6 +16,7 @@ namespace ChatServer
         delegate void command(User user, string prms);
         Dictionary<string, command> commandsMap = new Dictionary<string, command>();
         TcpListener listener;
+        FindingService findingService;
         bool stopped;
         Register register;
         RandomNick rndNick = new RandomNick();
@@ -40,6 +41,8 @@ namespace ChatServer
             register.Load();
             stopped = false;
             Log.Write("Сервер " + name + " запущен!");
+            findingService = new FindingService();
+            findingService.Start(name);
             listener = new TcpListener(IPAddress.Any, 666);
             listener.Start();
             while (!stopped)
@@ -64,61 +67,57 @@ namespace ChatServer
         void ClientThread(Object userObject)
         {
             User user = (User)userObject;
-            Thread thread = new Thread(() =>
+            Log.Write(String.Format("Подключен клиент: {0}",
+                user.client.Client.RemoteEndPoint.ToString()));
+            string date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
+            SendMessage(user, String.Format("MSG Тебя приветствует сервер {0}! Время на сервере: {1}",
+                name, date));
+            SendMessage("MSG " + user.name + " присоединился к чату.");
+            SendNamesToAll();
+            SendMessage(user, "YOUARE " + user.name);
+            while (!stopped)
             {
-                Log.Write(String.Format("Подключен клиент: {0}",
-                    user.client.Client.RemoteEndPoint.ToString()));
-                string date = DateTime.Now.Date.ToLongDateString();
-                SendMessage(user, String.Format("MSG Тебя приветствует сервер {0}! Время на сервере: {1}",
-                    name, date));
-                SendMessage("MSG " + user.name + " присоединился к чату.");
-                SendNamesToAll();
-                SendMessage(user, "YOUARE " + user.name);
-                while (!stopped)
+                string mess = "";
+                try
                 {
-                    string mess = "";
+                    mess = GetNextMessage(user);
+                }
+                catch
+                {
+                    Log.Write(String.Format("Ошибка получения сообщения! "
+                        + "Подключение с {0} будет разорвано!", user.name));
+                    lock (users) users.Remove(user);
+                    user.client.Close();
+                    SendNamesToAll();
+                    return;
+                }
+                int splitter = mess.IndexOf(' ');
+                if (splitter > 0)
+                {
+                    string comm = mess.Substring(0, splitter);
+                    string prms = mess.Substring(splitter + 1);
                     try
                     {
-                        mess = GetNextMessage(user);
+                        commandsMap[comm](user, prms);
                     }
                     catch
                     {
-                        Log.Write(String.Format("Ошибка получения сообщения! "
-                            + "Подключение с {0} будет разорвано!", user.name));
-                        lock (users) users.Remove(user);
-                        user.client.Close();
-                        SendNamesToAll();
-                        return;
-                    }
-                    int splitter = mess.IndexOf(' ');
-                    if (splitter > 0)
-                    {
-                        string comm = mess.Substring(0, splitter);
-                        string prms = mess.Substring(splitter + 1);
-                        try
-                        {
-                            commandsMap[comm](user, prms);
-                        }
-                        catch
-                        {
-                            SendError(user, "001");
-                            Log.Write("Неверный формат: " + mess);
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            commandsMap[mess](user, "");
-                        }
-                        catch
-                        {
-                            SendError(user, "001");
-                        }
+                        SendError(user, "001");
+                        Log.Write("Неверный формат: " + mess);
                     }
                 }
-            });
-            thread.Start();
+                else
+                {
+                    try
+                    {
+                        commandsMap[mess](user, "");
+                    }
+                    catch
+                    {
+                        SendError(user, "001");
+                    }
+                }
+            }
         }
 
         public void Stop()
@@ -134,6 +133,7 @@ namespace ChatServer
                 users.Clear();
             }
             if (listener != null) listener.Stop();
+            if (findingService != null)  findingService.Stop();
             stopped = true;
         }
 

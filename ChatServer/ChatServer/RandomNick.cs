@@ -14,7 +14,11 @@ namespace ChatServer
             "Ниндзя",
             "Школоло",
             "Панда",
-            "Панк"
+            "Панк",
+            "Жывтоне",
+            "Онотоле",
+            "Котэ",
+            "Сколопендре",
         };
 
         List<string> adjectivies = new List<string>() {
@@ -22,7 +26,10 @@ namespace ChatServer
             "Весёлый",
             "Отважный",
             "Гламурный",
-            "Чоткий"
+            "Чоткий",
+            "Ползучий",
+            "Загадочный",
+            "Грустный"
         };
 
         HashSet<string> takedNicks = new HashSet<string>();
