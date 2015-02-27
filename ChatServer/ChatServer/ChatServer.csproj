@@ -60,13 +60,19 @@
     <ManifestKeyFile>ChatServer_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>dsd.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -135,7 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="dsd.ico" />
-    <None Include="Resources\Icon1.ico" />
+    <None Include="Properties\app.manifest" />
     <None Include="Resources\switcherOn.png" />
     <None Include="Resources\switcherOff.png" />
   </ItemGroup>
