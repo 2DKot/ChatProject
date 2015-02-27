@@ -63,7 +63,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>dsd.ico</ApplicationIcon>
@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="dsd.ico" />
+    <None Include="Resources\Icon1.ico" />
     <None Include="Resources\switcherOn.png" />
     <None Include="Resources\switcherOff.png" />
   </ItemGroup>
