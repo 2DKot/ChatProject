@@ -20,6 +20,7 @@ namespace ChatClient
         private static Thread GettingMessagesThread;
         private static bool clientIsConnected;
         private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
+        private static string currentNick = "";
         public ClientWindow()
         {
             InitializeComponent();
@@ -61,8 +62,8 @@ namespace ChatClient
                     string ipAdrs = this.IPAdressTextBox.Text;
                     int port = Convert.ToInt32(this.PortTextBox.Text);
                     Client.GetInstance().LogIn(ipAdrs, port);
-                    newMessage = Client.GetInstance().GetMessage();
-                    this.Invoke(new strDel(AddTextInChatBox), newMessage);
+                    /*newMessage = Client.GetInstance().GetMessage();
+                    this.Invoke(new strDel(AddTextInChatBox), newMessage);*/
                     clientIsConnected = true;
                     this.EnableGettingNewInformation();
                     this.Invoke(new voidDel(DisactivateConnectButton));
@@ -111,6 +112,7 @@ namespace ChatClient
                 return answer;
             }
         }
+
         private static bool IsGettingMessagesThreadWorking
         {
             get
@@ -155,6 +157,11 @@ namespace ChatClient
                         {
                             this.Invoke(new strListDel(this.RefreshNickNamesListBox), Client.GetInstance().listOfNickNames);
                         }
+                        if (ClientWindow.currentNick != Client.GetInstance().ownNickName)
+                        {
+                            currentNick = Client.GetInstance().ownNickName;
+                            this.Invoke(new strDel(this.EditCurrentNickName), currentNick);
+                        }
                     }
                     catch (SocketException e)
                     {
@@ -172,15 +179,22 @@ namespace ChatClient
             });
             GettingMessagesThread.Start();
         }
-
+        private void EditCurrentNickName(string nickName)
+        {
+            if (nickName != "")
+            {
+                this.CurrentNickNameTextBox.Text = nickName;
+            }
+            else
+            {
+                this.CurrentNickNameTextBox.Clear();
+            }
+        }
         private void RequestNickNameButton_Click(object sender, EventArgs e)
         {
             try
             {
-                GuestNickNameTextBox.Text.Trim();
-                string newNick = GuestNickNameTextBox.Text;
-                DoRequestTempNickName(newNick);
-                Client.GetInstance().ownNickName = newNick;
+                DoRequestTempNickName();
             }
             catch (ArgumentException exc)
             {
@@ -195,13 +209,13 @@ namespace ChatClient
                 Client.GetInstance().ownNickName = "";
             }
         }
-        private void DoRequestTempNickName(string nickName)
+        private void DoRequestTempNickName()
         {
-            if (GuestNickNameTextBox.Text.Length != 0 && Client.IsCorrectNick(nickName))
+            try
             {
-                Client.GetInstance().RequestToChangeNickName(nickName);
+                Client.GetInstance().RequestToGetTempNickName();
             }
-            else
+            catch
             {
                 throw new ArgumentException();
             }
@@ -384,7 +398,6 @@ namespace ChatClient
                 {
                     LogIn(tempLogin, tempPass);
                 }
-                Client.GetInstance().ownNickName = tempLogin;
             }
             catch (Exception exc)
             {

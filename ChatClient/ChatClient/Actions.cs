@@ -29,6 +29,7 @@ namespace ChatClient
             commandToHandler.Add("ERROR", ERROR);
             commandToHandler.Add("PRIVMSG", PRIVMSG);
             commandToHandler.Add("NAMES", NAMES);
+            commandToHandler.Add("YOUARE", YOUARE);
         }
         static private string LogInWasSuccessfully()
         {
@@ -96,7 +97,7 @@ namespace ChatClient
             catch { }
             return UndefinedError;
         }
-        static private string HELLO(string restParameters)
+        static private string YOUARE(string restParameters)
         {
             Client.GetInstance().ownNickName = restParameters;
             return "Сервер Вас приветствует, " + restParameters + "!";
