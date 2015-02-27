@@ -68,10 +68,10 @@ namespace ChatClient
             return rInstance;
         }
 
-        public void RequestToChangeNickName(string nick)
+        public void RequestToGetTempNickName()
         {
-            string command = "NICK ";
-            SendText(command + nick);
+            string command = "NICK";
+            SendText(command);
         }
         
         public void LogIn(string ip, int port)

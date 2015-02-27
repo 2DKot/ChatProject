@@ -60,7 +60,7 @@
             this.GuestAuthorizationTabPage = new System.Windows.Forms.TabPage();
             this.GuestLoginLabel = new System.Windows.Forms.Label();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            this.GuestNickNameTextBox = new System.Windows.Forms.TextBox();
+            this.CurrentNickNameTextBox = new System.Windows.Forms.TextBox();
             this.AuthorizationTabControl.SuspendLayout();
             this.SignInTabPage.SuspendLayout();
             this.SignUpTabPage.SuspendLayout();
@@ -197,11 +197,11 @@
             // GettersFlowLayoutPanel
             // 
             this.GettersFlowLayoutPanel.AutoScroll = true;
-            this.GettersFlowLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.GettersFlowLayoutPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.GettersFlowLayoutPanel.Location = new System.Drawing.Point(12, 342);
+            this.GettersFlowLayoutPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.GettersFlowLayoutPanel.Location = new System.Drawing.Point(12, 369);
             this.GettersFlowLayoutPanel.Name = "GettersFlowLayoutPanel";
-            this.GettersFlowLayoutPanel.Size = new System.Drawing.Size(260, 64);
+            this.GettersFlowLayoutPanel.Size = new System.Drawing.Size(260, 49);
             this.GettersFlowLayoutPanel.TabIndex = 18;
             // 
             // GettersPanelLabel
@@ -339,7 +339,6 @@
             // 
             // GuestAuthorizationTabPage
             // 
-            this.GuestAuthorizationTabPage.Controls.Add(this.GuestNickNameTextBox);
             this.GuestAuthorizationTabPage.Controls.Add(this.GuestLoginLabel);
             this.GuestAuthorizationTabPage.Controls.Add(this.RequestNickNameButton);
             this.GuestAuthorizationTabPage.Location = new System.Drawing.Point(4, 22);
@@ -364,15 +363,16 @@
             this.flowLayoutPanel1.Controls.Add(this.AuthorizationTabControl);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(429, 28);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(227, 141);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(227, 112);
             this.flowLayoutPanel1.TabIndex = 23;
             // 
-            // GuestNickNameTextBox
+            // CurrentNickNameTextBox
             // 
-            this.GuestNickNameTextBox.Location = new System.Drawing.Point(6, 20);
-            this.GuestNickNameTextBox.Name = "GuestNickNameTextBox";
-            this.GuestNickNameTextBox.Size = new System.Drawing.Size(100, 20);
-            this.GuestNickNameTextBox.TabIndex = 12;
+            this.CurrentNickNameTextBox.Location = new System.Drawing.Point(323, 9);
+            this.CurrentNickNameTextBox.Name = "CurrentNickNameTextBox";
+            this.CurrentNickNameTextBox.ReadOnly = true;
+            this.CurrentNickNameTextBox.Size = new System.Drawing.Size(100, 20);
+            this.CurrentNickNameTextBox.TabIndex = 24;
             // 
             // ClientWindow
             // 
@@ -380,6 +380,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(669, 441);
+            this.Controls.Add(this.CurrentNickNameTextBox);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.GettersPanelLabel);
             this.Controls.Add(this.GettersFlowLayoutPanel);
@@ -446,7 +447,7 @@
         private System.Windows.Forms.TabPage GuestAuthorizationTabPage;
         private System.Windows.Forms.Label GuestLoginLabel;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.TextBox GuestNickNameTextBox;
+        private System.Windows.Forms.TextBox CurrentNickNameTextBox;
     }
 }
 
