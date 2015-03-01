@@ -24,7 +24,7 @@ namespace ChatServer
         private void ServerForm_Load(object sender, EventArgs e)
         {
             server = new Server();
-            server.users.listChangedHandler += UserListChanged;
+            User.SetOnListChangedHandler(UserListChanged);
             Log.LogEvent += LogUpdated;
             IPHostEntry host;
             host = Dns.GetHostEntry(Dns.GetHostName());
@@ -97,16 +97,15 @@ namespace ChatServer
         private void bKick_Click(object sender, EventArgs e)
         {
             if (lbUsers.SelectedIndex < 0) return;
-            User user = server.users[lbUsers.SelectedIndex];
-            lock (server.users) server.users.Remove(user);
-            user.client.Close();
+            User user = User.Get(lbUsers.SelectedIndex);
+            user.Remove();
         }
 
         private void bSendToAll_Click(object sender, EventArgs e)
         {
             string msg = tbMessage.Text;
             if (!cbDebug.Checked) msg = "MSG " + msg;
-            server.SendMessage(msg);
+            User.SendMessageToAll(msg);
         }
 
         private void bSendToCurrent_Click(object sender, EventArgs e)
@@ -114,7 +113,7 @@ namespace ChatServer
             if (lbUsers.SelectedIndex < 0) return;
             string msg = tbMessage.Text;
             if (!cbDebug.Checked) msg = "MSG " + msg;
-            server.SendMessage(server.users[lbUsers.SelectedIndex], msg);
+            User.Get(lbUsers.SelectedIndex).SendMessage(msg);
         }
 
         private void bClearLog_Click(object sender, EventArgs e)

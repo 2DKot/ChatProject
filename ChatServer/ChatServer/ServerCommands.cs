@@ -10,21 +10,7 @@ namespace ChatServer
         void MSG(User user, string prms)
         {
             string message = "MSG " + user.name + ": " + prms;
-            //Log.Write("Send to all: " + message);
-            lock (users)
-            {
-                foreach (User target in users)
-                {
-                    try
-                    {
-                        SendMessage(target, message);
-                    }
-                    catch
-                    {
-                        SendError(user, "002");
-                    }
-                }
-            }
+            User.SendMessageToAll(message);
         }
 
         void NICK(User user, string prms)
@@ -32,12 +18,12 @@ namespace ChatServer
             rndNick.Remove(user.name);
             string newName = rndNick.GetNew();
             Log.Write(user.name + " changed nick to " + newName);
-            SendMessage(("MSG " + user.name + " изменил ник на " + newName));
+            User.SendMessageToAll(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
-            SendError(user, "050");
-            SendNamesToAll();
-            SendMessage(user, "YOUARE " + user.name);
-            users.OnListChanged();
+            user.SendError("050");
+            User.SendNamesToAll();
+            user.SendYouAre();
+            User.OnListChanged();
         }
 
         void PRIVMSG(User user, string prms)
@@ -45,30 +31,31 @@ namespace ChatServer
             int splitter = prms.IndexOf(' ');
             if (splitter == -1)
             {
-                SendError(user, "001");
-                return;
+                user.SendError("001");
+                throw new FormatException("PRIVMSG <username> <msg>");
             }
             string targetName = prms.Substring(0, splitter);
             string message = prms.Substring(splitter + 1);
-            User target = FindUserByName(targetName);
+            User target = User.Find(targetName);
             string formattedMessage = "PRIVMSG " + user.name + ": " + message;
             if (target == null)
             {
-                SendError(user, "003");
+                user.SendError("003");
                 return;
             }
             try
             {
-                SendMessage(target, formattedMessage);
+                target.SendMessage(formattedMessage);
             }
             catch
             {
-                SendError(user, "002");
+                user.SendError("002");
                 return;
             }
-            SendMessage(user, formattedMessage);
+            user.SendMessage(formattedMessage);
         }
 
+        /*
         void NAMES(User user, string prms)
         {
             string message = "NAMES";
@@ -78,49 +65,58 @@ namespace ChatServer
             }
             SendMessage(user, message);
         }
-
+        */
+         
         void DATE(User user, string prms)
         {
-            SendMessage(user, "MSG "+DateTime.Now.Date.ToLongDateString());
+            user.SendMessage("MSG " + DateTime.Now.Date.ToLongDateString());
         }
 
         void REG(User user, string prms)
         {
             string[] splitted = prms.Split(' ');
+            if (splitted.Count() < 2)
+            {
+                throw new FormatException("REG <name> <password>");
+            }
             if (register.Add(splitted[0], splitted[1]))
             {
-                SendError(user, "053");
+                user.SendError("053");
                 register.Save();
             }
             else
             {
-                SendError(user, "051");
+                user.SendError("051");
             }
         }
 
         void LOGIN(User user, string prms)
         {
             string[] splitted = prms.Split(' ');
+            if (splitted.Count() < 2)
+            {
+                throw new FormatException("LOGIN <name> <password>");
+            }
             string name = splitted[0];
             string password = splitted[1];
             if (register.Contains(name) && register.Check(name, password))
             {
                 user.name = name;
-                SendError(user, "055");
-                SendNamesToAll();
-                SendMessage(name + " вернулся к нам!");
+                user.SendError("055");
+                User.SendNamesToAll();
+                User.SendMessageToAll("MSG " + name + " вернулся к нам!");
                 Log.Write(name + " зашёл.");
-                users.OnListChanged();
+                User.OnListChanged();
             }
             else
             {
-                SendError(user, "054");
-            }        
+                user.SendError("054");
+            }
         }
 
         void WHOIAM(User user, string prms)
         {
-            SendMessage(user, "YOUARE " + user.name);
+            user.SendMessage("YOUARE " + user.name);
         }
     }
 }
