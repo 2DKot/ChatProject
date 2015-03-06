@@ -177,9 +177,10 @@ namespace ChatClient
             }
             return Reactions.commandToHandler[command](restParameters);
         }
-        static private byte[] StringToBytes(string text)
+        static public byte[] StringToBytes(string text)
         {
             return (Encoding.UTF8.GetBytes(text));
         }
+
     }
 }

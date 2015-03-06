@@ -102,6 +102,10 @@ namespace ChatClient
             Client.GetInstance().ownNickName = restParameters;
             return "Сервер Вас приветствует, " + restParameters + "!";
         }
+        static private string IAMSERV(string restParameters)
+        {
+            return restParameters;
+        }
         static private string NAMES(string restParameters)
         {
             List<string> newNickNames = (restParameters.Split(new char[] { ' ' })).ToList();

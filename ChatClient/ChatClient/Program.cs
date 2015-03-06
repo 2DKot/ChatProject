@@ -19,7 +19,7 @@ namespace ChatClient
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ClientWindow());
+            Application.Run(new SearcherServersForm());
         }
         
     }

@@ -21,10 +21,22 @@ namespace ChatClient
         private static bool clientIsConnected;
         private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
         private static string currentNick = "";
-        public ClientWindow()
+        int serverPort;
+        string serverIP;
+        string serverName;
+        public ClientWindow(string IP, int port, string serverName)
         {
             InitializeComponent();
-            this.IPAdressTextBox.Text = "192.168.";
+            this.serverPort = port;
+            this.serverIP = IP;
+            this.serverName = serverName;
+            SetIdentifedLabels(IP, port, serverName);
+        }
+        private void SetIdentifedLabels(string IP, int port, string serverName)
+        {
+            this.IPAdressTextBox.Text = IP;
+            this.PortTextBox.Text = port.ToString();
+            this.ServerNameTextBox.Text = serverName;
         }
         private void SendButton_Click(object sender, EventArgs e)
         {
@@ -32,10 +44,15 @@ namespace ChatClient
             {
 
                 string typedText = this.TypingBox.Text;
-                string[] sendingMessages = null;
+                string[] sendingMessages;
                 if (this.DebugCheckBox.Checked == false)
                 {
                     sendingMessages = MapMessage(typedText);
+                    
+                }
+                else
+                {
+                    sendingMessages = new string[] {typedText};
                 }
                 Client.GetInstance().SendText(sendingMessages);
             }
@@ -54,30 +71,6 @@ namespace ChatClient
         //Производит подключение и активизирует получение сообщений от сервера
         private void ConnectButton_Click(object sender, EventArgs e)
         {
-            ConnectionThread = new Thread(() =>
-            {
-                try
-                {
-                    string newMessage = "";
-                    string ipAdrs = this.IPAdressTextBox.Text;
-                    int port = Convert.ToInt32(this.PortTextBox.Text);
-                    Client.GetInstance().LogIn(ipAdrs, port);
-                    /*newMessage = Client.GetInstance().GetMessage();
-                    this.Invoke(new strDel(AddTextInChatBox), newMessage);*/
-                    clientIsConnected = true;
-                    this.EnableGettingNewInformation();
-                    this.Invoke(new voidDel(DisactivateConnectButton));
-                    this.Invoke(new voidDel(PrepareFormToTyping));
-                }
-                catch (Exception exc)
-                {
-                    this.CloseClientConnection();
-                    MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт" + 
-                        "(возможно, сервер прекратил свою работу). Полная информация: " + exc.Message,
-                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            });
-
             if ( IsConnectingThreadWorking || IsGettingMessagesThreadWorking )
             {
                 MessageBox.Show("Подключение в процессе. Пожалуйста, дождитесь результата.",
@@ -88,13 +81,37 @@ namespace ChatClient
                 ConnectionThread.Start();
             }
         }
+        private void InitConnectionThread()
+        {
+            ConnectionThread = new Thread(() =>
+            {
+                try
+                {
+                    Client.GetInstance().LogIn(serverIP, serverPort);
+                    clientIsConnected = true;
+                    this.EnableGettingNewInformation();
+                    this.Invoke(new voidDel(DisactivateConnectButton));
+                    this.Invoke(new voidDel(PrepareFormToTyping));
+                }
+                catch (Exception exc)
+                {
+                    this.CloseClientConnection();
+                    MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт" +
+                        "(возможно, сервер прекратил свою работу). Полная информация: " + exc.Message,
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            });
+        }
         private void CloseClientConnection()
         {
             clientIsConnected = false;
             Client.GetInstance().LogOut();
             Client.GetInstance().ownNickName = "";
-            this.Invoke(new strListDel(RefreshNickNamesListBox), new List<string>());
-            this.Invoke(new voidDel(ActivateConnectButton));
+            if (!this.IsDisposed && !this.Disposing)
+            {
+                this.Invoke(new strListDel(RefreshNickNamesListBox), new List<string>());
+                this.Invoke(new voidDel(ActivateConnectButton));
+            }
         }
         private void DisconnectButton_Click(object sender, EventArgs e)
         {
@@ -104,12 +121,13 @@ namespace ChatClient
         {
             get
             {
-                bool answer = false;
+                /*bool answer = false;
                 if (ConnectionThread != null)
                 {
                     answer = ConnectionThread.IsAlive;
-                }
-                return answer;
+                }*/
+
+                return ConnectionThread.IsAlive;
             }
         }
 
@@ -117,12 +135,13 @@ namespace ChatClient
         {
             get
             {
-                bool answer = false;
+                /*bool answer = false;
                 if (GettingMessagesThread != null)
                 {
                     answer = GettingMessagesThread.IsAlive;
-                }
-                return answer;
+                }*/
+
+                return GettingMessagesThread.IsAlive;
             }
         }
         private void AddTextInChatBox(string text)
@@ -196,12 +215,6 @@ namespace ChatClient
             {
                 DoRequestTempNickName();
             }
-            catch (ArgumentException exc)
-            {
-                MessageBox.Show("Ник-нейм не должен состоять из нескольких слов, которые отделены пробелом.",
-                    "Некорретный ник-нейм", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Client.GetInstance().ownNickName = "";
-            }
             catch (Exception exc)
             {
                 MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу: \r\n" + exc.Message,
@@ -235,7 +248,7 @@ namespace ChatClient
                 this.ConnectButton.Enabled = false;
                 this.DisconnectButton.Enabled = true;
         }
-        private bool GettersPanelHasButtons()
+        private bool HasGettersPanelButtons()
         {
             Button temp = new Button();
             temp.Name = "Отправить всем";
@@ -246,7 +259,7 @@ namespace ChatClient
         {
             
             string[] discreteMessages = null;
-            if (this.GettersPanelHasButtons())
+            if (this.HasGettersPanelButtons())
             {
                 int quantityOfButtons = this.GettersFlowLayoutPanel.Controls.Count;
                 discreteMessages = new string[quantityOfButtons];
@@ -337,7 +350,7 @@ namespace ChatClient
             }
             catch (ArgumentOutOfRangeException)
             {
-                MessageBox.Show("Невозможно удалить получателя", "Ошибка аргумента");
+                MessageBox.Show("Невозможно удалить получателя.", "Ошибка аргумента");
             }
 
         }

@@ -61,11 +61,15 @@
             this.GuestLoginLabel = new System.Windows.Forms.Label();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.CurrentNickNameTextBox = new System.Windows.Forms.TextBox();
+            this.ServerNameLabel = new System.Windows.Forms.Label();
+            this.CurrentNickTabPage = new System.Windows.Forms.TabPage();
+            this.ServerNameTextBox = new System.Windows.Forms.TextBox();
             this.AuthorizationTabControl.SuspendLayout();
             this.SignInTabPage.SuspendLayout();
             this.SignUpTabPage.SuspendLayout();
             this.GuestAuthorizationTabPage.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            this.CurrentNickTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // RTMainChatBox
@@ -98,6 +102,7 @@
             // 
             this.IPAdressTextBox.Location = new System.Drawing.Point(97, 33);
             this.IPAdressTextBox.Name = "IPAdressTextBox";
+            this.IPAdressTextBox.ReadOnly = true;
             this.IPAdressTextBox.Size = new System.Drawing.Size(100, 20);
             this.IPAdressTextBox.TabIndex = 3;
             // 
@@ -105,6 +110,7 @@
             // 
             this.PortTextBox.Location = new System.Drawing.Point(203, 33);
             this.PortTextBox.Name = "PortTextBox";
+            this.PortTextBox.ReadOnly = true;
             this.PortTextBox.Size = new System.Drawing.Size(100, 20);
             this.PortTextBox.TabIndex = 4;
             // 
@@ -138,11 +144,11 @@
             // 
             // RequestNickNameButton
             // 
-            this.RequestNickNameButton.Location = new System.Drawing.Point(126, 36);
+            this.RequestNickNameButton.Location = new System.Drawing.Point(126, 31);
             this.RequestNickNameButton.Name = "RequestNickNameButton";
             this.RequestNickNameButton.Size = new System.Drawing.Size(75, 23);
             this.RequestNickNameButton.TabIndex = 10;
-            this.RequestNickNameButton.Text = "Войти";
+            this.RequestNickNameButton.Text = "Запрос";
             this.RequestNickNameButton.UseVisualStyleBackColor = true;
             this.RequestNickNameButton.Click += new System.EventHandler(this.RequestNickNameButton_Click);
             // 
@@ -166,7 +172,7 @@
             // DebugCheckBox
             // 
             this.DebugCheckBox.AutoSize = true;
-            this.DebugCheckBox.Location = new System.Drawing.Point(335, 35);
+            this.DebugCheckBox.Location = new System.Drawing.Point(569, 9);
             this.DebugCheckBox.Name = "DebugCheckBox";
             this.DebugCheckBox.Size = new System.Drawing.Size(88, 17);
             this.DebugCheckBox.TabIndex = 13;
@@ -215,6 +221,7 @@
             // 
             // AuthorizationTabControl
             // 
+            this.AuthorizationTabControl.Controls.Add(this.CurrentNickTabPage);
             this.AuthorizationTabControl.Controls.Add(this.SignInTabPage);
             this.AuthorizationTabControl.Controls.Add(this.SignUpTabPage);
             this.AuthorizationTabControl.Controls.Add(this.GuestAuthorizationTabPage);
@@ -368,11 +375,38 @@
             // 
             // CurrentNickNameTextBox
             // 
-            this.CurrentNickNameTextBox.Location = new System.Drawing.Point(323, 9);
+            this.CurrentNickNameTextBox.Location = new System.Drawing.Point(3, 25);
             this.CurrentNickNameTextBox.Name = "CurrentNickNameTextBox";
             this.CurrentNickNameTextBox.ReadOnly = true;
             this.CurrentNickNameTextBox.Size = new System.Drawing.Size(100, 20);
             this.CurrentNickNameTextBox.TabIndex = 24;
+            // 
+            // ServerNameLabel
+            // 
+            this.ServerNameLabel.AutoSize = true;
+            this.ServerNameLabel.Location = new System.Drawing.Point(306, 9);
+            this.ServerNameLabel.Name = "ServerNameLabel";
+            this.ServerNameLabel.Size = new System.Drawing.Size(74, 13);
+            this.ServerNameLabel.TabIndex = 25;
+            this.ServerNameLabel.Text = "Имя сервера";
+            // 
+            // CurrentNickTabPage
+            // 
+            this.CurrentNickTabPage.Controls.Add(this.CurrentNickNameTextBox);
+            this.CurrentNickTabPage.Location = new System.Drawing.Point(4, 22);
+            this.CurrentNickTabPage.Name = "CurrentNickTabPage";
+            this.CurrentNickTabPage.Size = new System.Drawing.Size(207, 85);
+            this.CurrentNickTabPage.TabIndex = 3;
+            this.CurrentNickTabPage.Text = "Текущий ник";
+            this.CurrentNickTabPage.UseVisualStyleBackColor = true;
+            // 
+            // ServerNameTextBox
+            // 
+            this.ServerNameTextBox.Location = new System.Drawing.Point(309, 33);
+            this.ServerNameTextBox.Name = "ServerNameTextBox";
+            this.ServerNameTextBox.ReadOnly = true;
+            this.ServerNameTextBox.Size = new System.Drawing.Size(100, 20);
+            this.ServerNameTextBox.TabIndex = 26;
             // 
             // ClientWindow
             // 
@@ -380,7 +414,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(669, 441);
-            this.Controls.Add(this.CurrentNickNameTextBox);
+            this.Controls.Add(this.ServerNameTextBox);
+            this.Controls.Add(this.ServerNameLabel);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Controls.Add(this.GettersPanelLabel);
             this.Controls.Add(this.GettersFlowLayoutPanel);
@@ -408,6 +443,8 @@
             this.GuestAuthorizationTabPage.ResumeLayout(false);
             this.GuestAuthorizationTabPage.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
+            this.CurrentNickTabPage.ResumeLayout(false);
+            this.CurrentNickTabPage.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -448,6 +485,9 @@
         private System.Windows.Forms.Label GuestLoginLabel;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.TextBox CurrentNickNameTextBox;
+        private System.Windows.Forms.TabPage CurrentNickTabPage;
+        private System.Windows.Forms.Label ServerNameLabel;
+        private System.Windows.Forms.TextBox ServerNameTextBox;
     }
 }
 
