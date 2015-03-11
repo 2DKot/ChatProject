@@ -6,59 +6,68 @@ using System.Drawing;
 using System.Threading;
 using System.Text;
 using System.Net.Sockets;
+using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ChatClient
 {
-    public partial class ClientWindow : Form
+    public partial class ClientForm : Form
     {
         private delegate void strDel(string arg);
         private delegate void strListDel(List<string> args);
         private delegate void voidDel();
-        private static Thread ConnectionThread;
-        private static Thread GettingMessagesThread;
+        private Thread ConnectionThread;
+        private Thread GettingMessagesThread;
         private static bool clientIsConnected;
         private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
         private static string currentNick = "";
-        int serverPort;
-        string serverIP;
+
         string serverName;
-        public ClientWindow(string IP, int port, string serverName)
+        IPEndPoint remoteIEP;
+        public ClientForm(string serverName, IPEndPoint IEP)
         {
             InitializeComponent();
-            this.serverPort = port;
-            this.serverIP = IP;
             this.serverName = serverName;
-            SetIdentifedLabels(IP, port, serverName);
+            this.remoteIEP = IEP;
+            InitConnectionThread();
+            InitGettingMessagesThread();
+            SetIdentifedLabels(IEP, serverName);
         }
-        private void SetIdentifedLabels(string IP, int port, string serverName)
+        private void SetIdentifedLabels(IPEndPoint IEP, string serverName)
         {
-            this.IPAdressTextBox.Text = IP;
-            this.PortTextBox.Text = port.ToString();
+            if (IEP != null)
+            {
+                this.IPAdressAndPortTextBox.Text = IEP.ToString();
+            }
+            else
+            {
+                this.IPAdressAndPortTextBox.Text = "Error data.";
+            }
             this.ServerNameTextBox.Text = serverName;
         }
         private void SendButton_Click(object sender, EventArgs e)
         {
             try
             {
-
                 string typedText = this.TypingBox.Text;
-                string[] sendingMessages;
-                if (this.DebugCheckBox.Checked == false)
+                if (typedText != "")
                 {
-                    sendingMessages = MapMessage(typedText);
-                    
+                    string[] sendingMessages;
+                    if (this.DebugCheckBox.Checked == false)
+                    {
+                        sendingMessages = MapMessage(typedText);
+                    }
+                    else
+                    {
+                        sendingMessages = new string[] { typedText };
+                    }
+                    Client.GetInstance().SendText(sendingMessages);
                 }
-                else
-                {
-                    sendingMessages = new string[] {typedText};
-                }
-                Client.GetInstance().SendText(sendingMessages);
             }
-            catch (Exception exc)
+            catch (SocketException exc)
             {
-                MessageBox.Show("Отсутствует подключение к серверу: " + exc.Message,
+                MessageBox.Show("Отсутствует подключение к серверу."/* + exc.Message*/,
                         "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -71,14 +80,16 @@ namespace ChatClient
         //Производит подключение и активизирует получение сообщений от сервера
         private void ConnectButton_Click(object sender, EventArgs e)
         {
-            if ( IsConnectingThreadWorking || IsGettingMessagesThreadWorking )
+            /*if ( IsConnectingThreadWorking )
             {
                 MessageBox.Show("Подключение в процессе. Пожалуйста, дождитесь результата.",
                     "Подключение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else if (! IsConnectingThreadWorking && ! IsGettingMessagesThreadWorking)
+            }*/
+            if (! IsConnectingThreadWorking && ! IsGettingMessagesThreadWorking)
             {
+                InitConnectionThread();
                 ConnectionThread.Start();
+                this.DisactivateConnectButton();
             }
         }
         private void InitConnectionThread()
@@ -87,61 +98,132 @@ namespace ChatClient
             {
                 try
                 {
-                    Client.GetInstance().LogIn(serverIP, serverPort);
+                    Client.GetInstance().DoConnect(remoteIEP);
                     clientIsConnected = true;
                     this.EnableGettingNewInformation();
-                    this.Invoke(new voidDel(DisactivateConnectButton));
+                    /*this.Invoke(new voidDel(DisactivateConnectButton));*/
                     this.Invoke(new voidDel(PrepareFormToTyping));
                 }
-                catch (Exception exc)
+                catch (SocketException exc)
                 {
+                    
                     this.CloseClientConnection();
-                    MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт" +
+                    this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
+                    {"Подключение не было произведено. Возможно, сервер прекратил свою работу.",
+                    Color.Red});
+                    this.Invoke(new voidDel(ActivateConnectButton));
+                    /*MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт" +
                         "(возможно, сервер прекратил свою работу). Полная информация: " + exc.Message,
-                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);*/
                 }
+            });
+        }
+        private void InitGettingMessagesThread()
+        {
+            GettingMessagesThread = new Thread(() =>
+            {
+                Message newMessage;
+                List<string> tempNicks = (List<string>)this.NickNamesListBox.DataSource;
+                try
+                {
+                    while (clientIsConnected)
+                    {
+                        
+                        string rawText = Client.GetInstance().GetMessage();
+                        /*Временно!*/
+                        if (this.DebugCheckBox.Checked == false)
+                        {
+                            newMessage = Client.GetInstance().ConvertToMessage(rawText);
+                            this.Invoke(new Action<Message>(AddTextInChatBox),newMessage);
+                        }
+                        /*См. вверху^*/
+                        else
+                        {
+                            this.Invoke(new Action<string>(this.AddTextInChatBox), rawText);
+                        }
+                        if (tempNicks != Client.GetInstance().listOfNickNames)
+                        {
+                            this.Invoke(new Action<List<string>>(this.RefreshNickNamesListBox), Client.GetInstance().listOfNickNames);
+                        }
+                        if (ClientForm.currentNick != Client.GetInstance().ownNickName)
+                        {
+                            currentNick = Client.GetInstance().ownNickName;
+                            this.Invoke(new Action<string>(this.EditCurrentNickName), currentNick);
+                        }
+                    }
+                }
+                catch (SocketException exc)
+                {
+                    /*MessageBox.Show("Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано. Информация: " + e.Message,
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);*/
+                    /*CloseClientConnection();*/
+                    this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
+                    {"Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано.",
+                    Color.Red});
+                    CloseClientConnection();
+                    this.Invoke(new voidDel(ActivateConnectButton));
+                }
+                catch (ArgumentException exc)
+                {
+                    this.Invoke(new Action<string,Color>(AddTextInChatBox), new object[] 
+                    {exc.Message, Color.Red});
+                }
+                /*catch (Exception e)
+                {
+                    MessageBox.Show("Скорее всего, сервер прекратил свою работу : " + e.Message,
+                        "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }*/
+                /*finally
+                {
+                    CloseClientConnection();
+                    this.Invoke(new voidDel(ActivateConnectButton));
+                }*/
             });
         }
         private void CloseClientConnection()
         {
             clientIsConnected = false;
-            Client.GetInstance().LogOut();
             Client.GetInstance().ownNickName = "";
+            Client.GetInstance().DoDisconnect();
+            /*if (this.GettingMessagesThread.ThreadState == ThreadState.Running)
+            {
+                this.GettingMessagesThread.Join();
+            }*/
+
             if (!this.IsDisposed && !this.Disposing)
             {
-                this.Invoke(new strListDel(RefreshNickNamesListBox), new List<string>());
-                this.Invoke(new voidDel(ActivateConnectButton));
+                this.Invoke(new Action<List<string>>(RefreshNickNamesListBox), new List<string>());
             }
         }
         private void DisconnectButton_Click(object sender, EventArgs e)
         {
             this.CloseClientConnection();
+            this.ActivateConnectButton();
         }
-        private static bool IsConnectingThreadWorking
+        private bool IsConnectingThreadWorking
         {
             get
             {
-                /*bool answer = false;
-                if (ConnectionThread != null)
+                bool answer = true;
+                if (ConnectionThread.ThreadState != ThreadState.Running)
                 {
-                    answer = ConnectionThread.IsAlive;
-                }*/
-
-                return ConnectionThread.IsAlive;
+                    answer = false;
+                }
+                
+                return answer;
             }
         }
 
-        private static bool IsGettingMessagesThreadWorking
+        private bool IsGettingMessagesThreadWorking
         {
             get
             {
-                /*bool answer = false;
-                if (GettingMessagesThread != null)
+                bool answer = true;
+                if (GettingMessagesThread.ThreadState != ThreadState.Running)
                 {
-                    answer = GettingMessagesThread.IsAlive;
-                }*/
-
-                return GettingMessagesThread.IsAlive;
+                    answer = false;
+                }
+                return answer;
             }
         }
         private void AddTextInChatBox(string text)
@@ -149,53 +231,28 @@ namespace ChatClient
             this.RTMainChatBox.AppendText(text + Environment.NewLine);
             this.RTMainChatBox.ScrollToCaret();
         }
-        /*
-        private void AddTextInChatBox(string text, Style type)
+        
+        private void AddTextInChatBox(string text, Color color)
         {
-
-        }*/
+            this.RTMainChatBox.SelectionColor = color;
+            this.RTMainChatBox.AppendText(text +Environment.NewLine);
+            this.RTMainChatBox.SelectionColor = this.RTMainChatBox.ForeColor;
+            this.RTMainChatBox.ScrollToCaret();
+        }
+        private void AddTextInChatBox(Message receivedMessage)
+        {
+            if (receivedMessage != null && receivedMessage.TextMessage != String.Empty)
+            {
+                AddTextInChatBox(receivedMessage.TextMessage, receivedMessage.TextColor);
+            }
+        }
         private void EnableGettingNewInformation()
         {
-            
-            List<string> tempNicks = (List<string>)this.NickNamesListBox.DataSource;
-            GettingMessagesThread = new Thread(() =>
+            if (GettingMessagesThread.ThreadState == ThreadState.Stopped ||
+                GettingMessagesThread.ThreadState == ThreadState.Aborted)
             {
-                while (clientIsConnected)
-                {
-                    try
-                    {
-                        string newMessage = Client.GetInstance().GetMessage();
-                        /*Временно!*/
-                        if (this.DebugCheckBox.Checked == false)
-                        {
-                            newMessage = Client.GetInstance().HandleMessage(newMessage);
-                        }
-                        /*См. вверху^*/
-                        this.Invoke(new strDel(this.AddTextInChatBox), newMessage);
-                        if (tempNicks != Client.GetInstance().listOfNickNames)
-                        {
-                            this.Invoke(new strListDel(this.RefreshNickNamesListBox), Client.GetInstance().listOfNickNames);
-                        }
-                        if (ClientWindow.currentNick != Client.GetInstance().ownNickName)
-                        {
-                            currentNick = Client.GetInstance().ownNickName;
-                            this.Invoke(new strDel(this.EditCurrentNickName), currentNick);
-                        }
-                    }
-                    catch (SocketException e)
-                    {
-                        this.CloseClientConnection();
-                        MessageBox.Show("Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано. Информация: " + e.Message,
-                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    catch (Exception e)
-                    {
-                        this.CloseClientConnection();
-                        MessageBox.Show("Скорее всего, сервер прекратил свою работу : " + e.Message,
-                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            });
+                InitGettingMessagesThread();
+            }
             GettingMessagesThread.Start();
         }
         private void EditCurrentNickName(string nickName)
@@ -213,27 +270,15 @@ namespace ChatClient
         {
             try
             {
-                DoRequestTempNickName();
+                Client.GetInstance().RequestToGetTempNickName();
             }
-            catch (Exception exc)
+            catch (SocketException exc)
             {
-                MessageBox.Show("Ошибка. Скорее всего, сервер прекратил свою работу: \r\n" + exc.Message,
+                MessageBox.Show("Отсутствует подключение к серверу.",
                             "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Client.GetInstance().ownNickName = "";
             }
         }
-        private void DoRequestTempNickName()
-        {
-            try
-            {
-                Client.GetInstance().RequestToGetTempNickName();
-            }
-            catch
-            {
-                throw new ArgumentException();
-            }
-        }
-        
         private void RefreshNickNamesListBox (List<string> nicks)
         {
             this.NickNamesListBox.DataSource = nicks;
@@ -281,22 +326,19 @@ namespace ChatClient
             this.NickNamesListBox.SelectedItem = null;
             this.TypingBox.Text = "";
             this.GettersFlowLayoutPanel.Controls.Clear();
-            this.GettersFlowLayoutPanel.Controls.Add(ClientWindow.CreateButtonForGetters("Отправить всем"));
+            this.GettersFlowLayoutPanel.Controls.Add(ClientForm.CreateButtonForGetters("Отправить всем"));
         }
 
         private void ClientWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
+            this.CloseClientConnection();
+            /*if (GettingMessagesThread.ThreadState == ThreadState.Running )
             {
-                this.CloseClientConnection();
-            }
-            catch { }
+                GettingMessagesThread.Join();
+            }*/
+            SearcherServersForm form = new SearcherServersForm();
+            form.Show();
         }
-        /*
-        private void NickNamesListBox_DataSourceChanged(object sender, EventArgs e)
-        {
-            this.NickNamesListBox.SelectedItem = null;
-        }*/
         private static Button CreateButtonForGetters(string nameOfGetter)
         {
             Button rButtton = new Button();
@@ -327,7 +369,7 @@ namespace ChatClient
                     bool itHasSameNickFlag = this.GettersFlowLayoutPanel.Controls.ContainsKey(selectedNickName);
                     if (!itHasSameNickFlag)
                     {
-                        Button newGetter = ClientWindow.CreateButtonForGetters(selectedNickName);
+                        Button newGetter = ClientForm.CreateButtonForGetters(selectedNickName);
                         if (selectedNickName != "Отправить всем")
                         {
                             newGetter.Click += GetterButton_Click;
@@ -384,11 +426,20 @@ namespace ChatClient
                 {
                     RegisterNewLogin(regLogin, regPass);
                 }
+                else
+                {
+                    throw new ArgumentException("Некорректный ник-нейм или пароль.");
+                }
 
             }
-            catch (Exception exc)
+            catch (SocketException exc)
             {
                 MessageBox.Show("Невозможно зарегистрировать пользователя. Обратите внимание на соединение. Подробная информация: " + exc.Message,
+                    "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
+            catch (ArgumentException exc)
+            {
+                MessageBox.Show("Невозможно зарегистрировать пользователя. Подробная информация: " + exc.Message,
                     "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
             finally
@@ -411,6 +462,15 @@ namespace ChatClient
                 {
                     LogIn(tempLogin, tempPass);
                 }
+                else
+                {
+                    throw new ArgumentException("Некорректный ник-нейм или пароль.");
+                }
+            }
+            catch (ArgumentException exc)
+            {
+                MessageBox.Show("Невозможно авторизовать пользователя. Подробная информация: " + exc.Message,
+                    "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
             catch (Exception exc)
             {

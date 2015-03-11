@@ -13,7 +13,7 @@ namespace ChatClient
         public const int transPort = 667;
         public const int recievPort = 668;
         public static readonly string command = "FINDSERVER";
-        public static readonly string serverCommand = "IAMSERVER";
+        public static readonly string serverCommand = "IAMSERV";
         public IPEndPoint remoteIEP;
         public static Dictionary<string, IPEndPoint> findedIEPs;
         private Thread receivingBroadcastMessagesThread;
@@ -29,12 +29,12 @@ namespace ChatClient
             InitReceivingBroadcastMessagesThread();
 
         }
-        private UdpClient GetTransClient()
+        /*private UdpClient GetTransClient()
         {
             UdpClient client = new UdpClient(transPort);
             client.EnableBroadcast = true;
             return client;
-        }
+        }*/
         private UdpClient GetRecievClient()
         {
             UdpClient client = new UdpClient(recievPort);
@@ -47,9 +47,11 @@ namespace ChatClient
         }
         public void StartSearchingServers()
         {
+            findedIEPs = new Dictionary<string, IPEndPoint>();
             findingStatus = true;
             SendBroadcastMessage();
-            if (receivingBroadcastMessagesThread.ThreadState == ThreadState.Aborted)
+            if (receivingBroadcastMessagesThread.ThreadState == ThreadState.Aborted || 
+                receivingBroadcastMessagesThread.ThreadState == ThreadState.Stopped)
             {
                 InitReceivingBroadcastMessagesThread();
             }
@@ -60,18 +62,17 @@ namespace ChatClient
         {
             findingStatus = false;
             Interrupt();
-            receivingBroadcastMessagesThread.Abort();
+            receivingBroadcastMessagesThread.Join();
             
         }
         private void SendBroadcastMessage()
         {
             if (commonClient.Client == null)
             {
-                commonClient = GetTransClient();
+                commonClient = GetRecievClient();
             }
             try
             {
-                commonClient.Connect(remoteIEP);
                 byte[] messageInBytes = Client.StringToBytes(command);
                 commonClient.Send(messageInBytes, messageInBytes.Length, remoteIEP);
             }
@@ -83,7 +84,7 @@ namespace ChatClient
             {
                 try
                 {
-                    commonClient.Close();
+                    //commonClient.Close();
                 }
                 catch
                 { }
@@ -102,7 +103,8 @@ namespace ChatClient
                     }
                 }
             }
-            catch { };
+            catch (SocketException) 
+            { };
         }
         private void FindIPsServers()
         {
@@ -110,23 +112,30 @@ namespace ChatClient
             byte[] receivedData;
             string message;
             string tempCommand;
-            IPEndPoint currentIPE = null;
-            if (commonClient.Client == null)
+            IPEndPoint currentIEP = null;
+            /*if (commonClient.Client == null)
             {
                 commonClient = GetRecievClient();
-            }
+            }*/
             try
             {
                 
                 while (findingStatus)
                 {
-                    receivedData = commonClient.Receive(ref currentIPE);
+                    receivedData = commonClient.Receive(ref currentIEP);
+                    currentIEP.Port = 666;
                     message = Encoding.UTF8.GetString(receivedData);
                     tempCommand = message.Substring(0, serverCommand.Length);
                     if (tempCommand.Equals(serverCommand))
                     {
                         message = message.Remove(0, serverCommand.Length + 1);
-                        findedIEPs.Add(message, currentIPE);
+                        if (!findedIEPs.ContainsKey(message) && !findedIEPs.ContainsValue(currentIEP))
+                        {
+                            /*lock (findedIEPs)*/
+                            {
+                                findedIEPs.Add(message, currentIEP);
+                            }
+                        }
                     }
                 }
             }
@@ -134,14 +143,9 @@ namespace ChatClient
             {
                 //Все идет по плану
             }
-            catch (Exception exc)
-            {
-                throw exc;
-            }
             finally
             {
                 findingStatus = false;
-                commonClient.Close();
             }
         }
     }

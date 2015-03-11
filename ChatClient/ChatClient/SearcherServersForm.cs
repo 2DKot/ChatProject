@@ -26,7 +26,6 @@ namespace ChatClient
             this.ConnectButton.Enabled = false;
             this.SearchButton.Text = startSearchButtonText;
             searcher = new SearcherServers();
-            copyOfListServer = new Dictionary<string, IPEndPoint>();
             mappedListServers = new List<string>();
             InitRefreshingServerListBoxThread();
         }
@@ -49,22 +48,22 @@ namespace ChatClient
         private void RefreshListServer()
         {
             while(refreshingStatus)
-            {
-                if (copyOfListServer != SearcherServers.findedIEPs )
+                /*lock (SearcherServers.findedIEPs)*/
                 {
-                    copyOfListServer = SearcherServers.findedIEPs;
-                    mappedListServers = MapToList(copyOfListServer);
-                    this.Invoke(new Action(ChangeServerListBox));
+                    {
+                        if (copyOfListServer != SearcherServers.findedIEPs)
+                        {
+                            copyOfListServer = SearcherServers.findedIEPs;
+                            mappedListServers = MapToList(copyOfListServer);
+                            this.Invoke(new Action(ChangeServerListBox));
+                        }
+                    }
                 }
-            }
-            
         }
         public void ChangeServerListBox()
         {
-            lock (SearcherServers.findedIEPs)
-            {
-                ServersListBox.DataSource = mappedListServers;
-            }
+            ServersListBox.DataSource = mappedListServers;
+            
         }
         private void SearchButton_Click(object sender, EventArgs e)
         {
@@ -86,15 +85,16 @@ namespace ChatClient
         }
         private void StartSearch()
         {
+            ResetServersList();
             searcher.StartSearchingServers();
             refreshingStatus = true;
-            if (refreshingServerListBoxThread.ThreadState == ThreadState.Stopped ||
-                refreshingServerListBoxThread.ThreadState == ThreadState.Aborted)
+            if (refreshingServerListBoxThread.ThreadState == ThreadState.Stopped)
             {
                 InitRefreshingServerListBoxThread();
             }
             refreshingServerListBoxThread.Start();
             this.SearchButton.Text = stopSearchButtonText;
+
         }
 
         private void ServersListBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -111,7 +111,23 @@ namespace ChatClient
 
         private void ConnectButton_Click(object sender, EventArgs e)
         {
-            
+            StopSearch();
+            string servName = this.mappedListServers[this.ServersListBox.SelectedIndex].Split(new char[]{' '})[0];
+            IPEndPoint tempIEP = this.copyOfListServer[servName];
+            ClientForm form = new ClientForm(servName, tempIEP);
+            form.Show();
+            this.Hide();
+        }
+        private void ResetServersList()
+        {
+            mappedListServers = new List<string>();
+            copyOfListServer = new Dictionary<string, IPEndPoint>();
+            this.ServersListBox.DataSource = mappedListServers;
+        }
+
+        private void SearcherServersForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopSearch();
         }
 
     }

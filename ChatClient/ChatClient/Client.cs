@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace ChatClient
 {
     class Client
     {
+        private static List<string> ignoredCommandsList;
         TcpClient clientToServer;
         NetworkStream nStream;
         static Client instance;
@@ -28,26 +28,16 @@ namespace ChatClient
         private Client()
         {
             listOfNickNames = new List<string>();
+            InitIgnoredList();
 
         }
-        private IPEndPoint GetIEP(string ip, int port)
+    
+        private static void InitIgnoredList()
         {
-            IPEndPoint rInstance = null;
-            try
-            {
-                rInstance = new IPEndPoint(IPAddress.Parse(ip), port);
-            }
-            catch
-            {
-                throw new Exception();
-            }
-            return rInstance;
+            ignoredCommandsList = new List<string>();
+            ignoredCommandsList.Add("NAMES");
+
         }
-        static private TcpClient GetNewTCPClient()
-        {
-            return (new TcpClient());
-        }
-        
         public static bool IsCorrectNick(string nick)
         {
             bool flagSpaceSymbol = (nick.IndexOf(' ') != -1);
@@ -60,38 +50,30 @@ namespace ChatClient
 
             return !(flagSpaceSymbol);
         }
-        private NetworkStream GetNetworkStream(IPEndPoint remoteIEP)
-        {
-            NetworkStream rInstance = null;
-            this.clientToServer.Connect(remoteIEP);
-            rInstance = this.clientToServer.GetStream();
-            return rInstance;
-        }
-
         public void RequestToGetTempNickName()
         {
             string command = "NICK";
             SendText(command);
         }
         
-        public void LogIn(string ip, int port)
+        public void DoConnect(IPEndPoint IEP)
         {
-            IPEndPoint remoteIEP = this.GetIEP(ip, port);
-            this.clientToServer = Client.GetNewTCPClient();
-            this.nStream = this.GetNetworkStream(remoteIEP);
-            if (this.nStream == null)
+            IPEndPoint remoteIEP = IEP;
+            this.clientToServer = new TcpClient();
+            this.clientToServer.Connect(remoteIEP);
+            if (this.clientToServer.Client == null)
             {
-                throw new NullReferenceException();
+                throw new SocketException();
             }
         }
-        public void LogOut()
+        public void DoDisconnect()
         {
             try
             {
                 if (this.clientToServer != null)
                 {
                     this.clientToServer.Close();
-                    this.nStream = null;
+                    this.clientToServer.Client= null;
                 }
             }
             catch
@@ -106,10 +88,9 @@ namespace ChatClient
                 byte[] buffWithMessage = StringToBytes(message);
                 int length = buffWithMessage.Length;
                 byte[] buffWithLength = BitConverter.GetBytes(length);
-                //First sending is data about size of a message
-                GetInstance().nStream.Write(buffWithLength, 0, buffWithLength.Length);
-                //Second sending is the message
-                GetInstance().nStream.Write(buffWithMessage, 0, length);
+                
+                this.clientToServer.GetStream().Write(buffWithLength, 0, buffWithLength.Length);
+                this.clientToServer.GetStream().Write(buffWithMessage, 0, length);
             }
             catch
             {
@@ -121,6 +102,7 @@ namespace ChatClient
         {
             if (messages == null || messages.Length == 0)
             {
+
                 throw new ArgumentException();
             }
             foreach (string currentMessage in messages)
@@ -139,18 +121,16 @@ namespace ChatClient
                 byte[] buffWithMessage;
 
                 buffWithLength = new byte[lengthOfBuffWithLength];
-                nStream.Read(buffWithLength, 0, lengthOfBuffWithLength);
+                this.clientToServer.GetStream().Read(buffWithLength, 0, lengthOfBuffWithLength);
                 int lengthOfMessage = BitConverter.ToInt32(buffWithLength, 0);
                 buffWithMessage = new byte[lengthOfMessage];
-                nStream.Read(buffWithMessage, 0, lengthOfMessage);
+                this.clientToServer.GetStream().Read(buffWithMessage, 0, lengthOfMessage);
                 message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
                 if (IsFailedMessage(message))
                 {
-                    GetInstance().clientToServer.Close();
-                    GetInstance().nStream = null;
+                    DoDisconnect();
                 }
                 return message;
-                
             }
             catch
             {
@@ -161,21 +141,74 @@ namespace ChatClient
         {
             return text == "";
         }
-        public string HandleMessage(string text)
+        public string HandleRawDataText(string text)
         {
-            int firstIndexTab = text.IndexOf(' ');
+            string handledText = "";
+            int firstIndexSpace = text.IndexOf(' ');
             string command = "";
             string restParameters = "";
-            if (firstIndexTab != -1)
+            if (firstIndexSpace != -1)
             {
-                command = text.Substring(0, firstIndexTab);
-                restParameters = text.Remove(0, firstIndexTab+1);
+                command = text.Substring(0, firstIndexSpace);
+                restParameters = text.Remove(0, firstIndexSpace+1);
             }
             else
             { 
-                return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";
+                /*return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";*/
+                throw new ArgumentException("Некорретное сообщение со стороны сервера - работа могла быть прекращена.");
             }
-            return Reactions.commandToHandler[command](restParameters);
+            if (!Reactions.commandToHandler.ContainsKey(command))
+            {
+                throw new ArgumentException("Неизвестная команда сервера.");
+            }
+            handledText = Reactions.commandToHandler[command](restParameters);
+            if (ignoredCommandsList.Contains(command))
+            {
+                handledText = String.Empty;
+            }
+            return handledText;
+        }
+        public Message ConvertToMessage(string rawData)
+        {
+            string handledTextMessage = HandleRawDataText(rawData);
+            Color textColor = DetermineColor(rawData.Substring(0, rawData.IndexOf(' ')));
+            Message message = new Message(handledTextMessage, textColor);
+            return message;
+        }
+        static private Color DetermineColor(string command)
+        {
+            Color rColor;
+            switch (command)
+            {
+                case "YOUARE":
+                    {
+                        rColor = Color.Red;
+                        break;
+                    }
+                case "ERROR":
+                    {
+                        rColor = Color.Red;
+                        break;
+                    }
+                case "MSG":
+                    {
+                        rColor = Color.Black;
+                        break;
+                    }
+                case "PRIVMSG":
+                    {
+                        rColor = Color.Indigo;
+                        break;
+                    }
+                default:
+                    {
+                        /*throw new ArgumentException("");*/
+                        rColor = Color.Black;
+                        break;
+                    }
+
+            }
+            return rColor;
         }
         static public byte[] StringToBytes(string text)
         {
