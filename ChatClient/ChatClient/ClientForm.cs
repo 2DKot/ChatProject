@@ -32,6 +32,7 @@ namespace ChatClient
             this.remoteIEP = IEP;
             InitConnectionThread();
             InitGettingMessagesThread();
+            PrepareFormToTyping();
             SetIdentifedLabels(IEP, serverName);
         }
         private void SetIdentifedLabels(IPEndPoint IEP, string serverName)
@@ -108,10 +109,13 @@ namespace ChatClient
                 {
                     
                     this.CloseClientConnection();
-                    this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
-                    {"Подключение не было произведено. Возможно, сервер прекратил свою работу.",
-                    Color.Red});
-                    this.Invoke(new voidDel(ActivateConnectButton));
+                    if (!this.IsDisposed && !this.Disposing)
+                    {
+                        this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
+                        {"Подключение не было произведено. Возможно, сервер прекратил свою работу.",
+                        Color.Red});
+                        this.Invoke(new voidDel(ActivateConnectButton));
+                    }
                     /*MessageBox.Show("Подключение не было произведено. Проверьте IP-адрес и порт" +
                         "(возможно, сервер прекратил свою работу). Полная информация: " + exc.Message,
                         "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);*/
@@ -157,27 +161,37 @@ namespace ChatClient
                     /*MessageBox.Show("Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано. Информация: " + e.Message,
                         "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);*/
                     /*CloseClientConnection();*/
-                    this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
+                    if (!this.IsDisposed && !this.Disposing)
+                    {
+                        this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
                     {"Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано.",
                     Color.Red});
-                    CloseClientConnection();
-                    this.Invoke(new voidDel(ActivateConnectButton));
+                    }
+                    
                 }
                 catch (ArgumentException exc)
                 {
-                    this.Invoke(new Action<string,Color>(AddTextInChatBox), new object[] 
-                    {exc.Message, Color.Red});
+                    if (!this.IsDisposed && !this.Disposing)
+                    {
+                        this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] { exc.Message + 
+                            " Соединение с сервером будет разорвано.", Color.Red });
+                    }
                 }
                 /*catch (Exception e)
                 {
                     MessageBox.Show("Скорее всего, сервер прекратил свою работу : " + e.Message,
                         "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }*/
-                /*finally
+                finally
                 {
                     CloseClientConnection();
-                    this.Invoke(new voidDel(ActivateConnectButton));
-                }*/
+                    if (!this.IsDisposed && !this.Disposing)
+                    {
+                        this.Invoke(new Action<List<string>>(RefreshNickNamesListBox), new List<string>());
+                        this.Invoke(new voidDel(ActivateConnectButton));
+                    }
+                    
+                }
             });
         }
         private void CloseClientConnection()
@@ -190,14 +204,19 @@ namespace ChatClient
                 this.GettingMessagesThread.Join();
             }*/
 
-            if (!this.IsDisposed && !this.Disposing)
+            /*if (!this.IsDisposed || !this.Disposing)
             {
                 this.Invoke(new Action<List<string>>(RefreshNickNamesListBox), new List<string>());
-            }
+            }*/
         }
+        
         private void DisconnectButton_Click(object sender, EventArgs e)
         {
             this.CloseClientConnection();
+            if (!this.IsDisposed || !this.Disposing)
+            {
+                this.Invoke(new Action<List<string>>(RefreshNickNamesListBox), new List<string>());
+            }
             this.ActivateConnectButton();
         }
         private bool IsConnectingThreadWorking
@@ -331,10 +350,18 @@ namespace ChatClient
 
         private void ClientWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.CloseClientConnection();
-            /*if (GettingMessagesThread.ThreadState == ThreadState.Running )
+            /*this.CloseClientConnection();
+            while (this.GettingMessagesThread.ThreadState == ThreadState.Running)
             {
-                GettingMessagesThread.Join();
+                Thread.Sleep(200);
+            }
+            /*while (GettingMessagesThread.ThreadState == ThreadState.Running )
+            {
+                Thread.Sleep(100);
+                //Ждем естественное завершение потока получения информации
+                //Отказ от Join потому, что в этом потоке вызывается Invoke(),
+                //который должен работать от имени главного потока. Т.е., если поставить Join(),
+                //то все потоки будут ждать, а главный поток так и не сможет выполнить Invoke()
             }*/
             SearcherServersForm form = new SearcherServersForm();
             form.Show();
@@ -483,6 +510,13 @@ namespace ChatClient
                 this.LoginTextBox.Clear();
                 this.PasswordTextBox.Clear();
             }
+        }
+
+        private void ClientForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CloseClientConnection();
+            SearcherServersForm form = new SearcherServersForm();
+            form.Show();
         }
     }
 }

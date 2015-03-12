@@ -13,7 +13,6 @@ namespace ChatClient
     {
         private static List<string> ignoredCommandsList;
         TcpClient clientToServer;
-        NetworkStream nStream;
         static Client instance;
         public List<string> listOfNickNames;
         public string ownNickName;
@@ -70,7 +69,9 @@ namespace ChatClient
         {
             try
             {
-                if (this.clientToServer != null)
+               /**/ if (this.clientToServer != null && 
+                   this.clientToServer.Client != null && 
+                   this.clientToServer.Client.Connected)
                 {
                     this.clientToServer.Close();
                     this.clientToServer.Client= null;
@@ -102,7 +103,6 @@ namespace ChatClient
         {
             if (messages == null || messages.Length == 0)
             {
-
                 throw new ArgumentException();
             }
             foreach (string currentMessage in messages)
@@ -128,9 +128,13 @@ namespace ChatClient
                 message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
                 if (IsFailedMessage(message))
                 {
-                    DoDisconnect();
+                    new SocketException();
                 }
                 return message;
+            }
+            catch (ArgumentException)
+            {
+                throw new ArgumentException();
             }
             catch
             {
@@ -155,7 +159,7 @@ namespace ChatClient
             else
             { 
                 /*return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";*/
-                throw new ArgumentException("Некорретное сообщение со стороны сервера - работа могла быть прекращена.");
+                throw new ArgumentException("Некорретная команда со стороны сервера."/* - работа могла быть прекращена."*/);
             }
             if (!Reactions.commandToHandler.ContainsKey(command))
             {

@@ -23,7 +23,7 @@ namespace ChatClient
         public SearcherServers()
         {
             remoteIEP = new IPEndPoint(IPAddress.Broadcast, transPort);
-            commonClient = GetRecievClient();
+            commonClient = GetReceiveClient();
             findedIEPs = new Dictionary<string, IPEndPoint>();
             findingStatus = false;
             InitReceivingBroadcastMessagesThread();
@@ -35,7 +35,7 @@ namespace ChatClient
             client.EnableBroadcast = true;
             return client;
         }*/
-        private UdpClient GetRecievClient()
+        private UdpClient GetReceiveClient()
         {
             UdpClient client = new UdpClient(recievPort);
             client.EnableBroadcast = true;
@@ -69,7 +69,7 @@ namespace ChatClient
         {
             if (commonClient.Client == null)
             {
-                commonClient = GetRecievClient();
+                commonClient = GetReceiveClient();
             }
             try
             {
@@ -131,10 +131,7 @@ namespace ChatClient
                         message = message.Remove(0, serverCommand.Length + 1);
                         if (!findedIEPs.ContainsKey(message) && !findedIEPs.ContainsValue(currentIEP))
                         {
-                            /*lock (findedIEPs)*/
-                            {
-                                findedIEPs.Add(message, currentIEP);
-                            }
+                            findedIEPs.Add(message, currentIEP);
                         }
                     }
                 }

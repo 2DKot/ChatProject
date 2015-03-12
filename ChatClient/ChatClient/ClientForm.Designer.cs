@@ -43,7 +43,6 @@
             this.GettersFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.GettersPanelLabel = new System.Windows.Forms.Label();
             this.AuthorizationTabControl = new System.Windows.Forms.TabControl();
-            this.CurrentNickNameTextBox = new System.Windows.Forms.TextBox();
             this.SignInTabPage = new System.Windows.Forms.TabPage();
             this.PasswordLabel = new System.Windows.Forms.Label();
             this.LoginLabel = new System.Windows.Forms.Label();
@@ -57,6 +56,7 @@
             this.RegPasswordTextBox = new System.Windows.Forms.TextBox();
             this.RegLoginTextBox = new System.Windows.Forms.TextBox();
             this.GuestAuthorizationTabPage = new System.Windows.Forms.TabPage();
+            this.CurrentNickNameTextBox = new System.Windows.Forms.TextBox();
             this.GuestLoginLabel = new System.Windows.Forms.Label();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.ServerNameLabel = new System.Windows.Forms.Label();
@@ -209,14 +209,6 @@
             this.AuthorizationTabControl.Size = new System.Drawing.Size(215, 111);
             this.AuthorizationTabControl.TabIndex = 0;
             // 
-            // CurrentNickNameTextBox
-            // 
-            this.CurrentNickNameTextBox.Location = new System.Drawing.Point(6, 20);
-            this.CurrentNickNameTextBox.Name = "CurrentNickNameTextBox";
-            this.CurrentNickNameTextBox.ReadOnly = true;
-            this.CurrentNickNameTextBox.Size = new System.Drawing.Size(100, 20);
-            this.CurrentNickNameTextBox.TabIndex = 24;
-            // 
             // SignInTabPage
             // 
             this.SignInTabPage.Controls.Add(this.PasswordLabel);
@@ -343,6 +335,14 @@
             this.GuestAuthorizationTabPage.Text = "Гость";
             this.GuestAuthorizationTabPage.UseVisualStyleBackColor = true;
             // 
+            // CurrentNickNameTextBox
+            // 
+            this.CurrentNickNameTextBox.Location = new System.Drawing.Point(6, 20);
+            this.CurrentNickNameTextBox.Name = "CurrentNickNameTextBox";
+            this.CurrentNickNameTextBox.ReadOnly = true;
+            this.CurrentNickNameTextBox.Size = new System.Drawing.Size(100, 20);
+            this.CurrentNickNameTextBox.TabIndex = 24;
+            // 
             // GuestLoginLabel
             // 
             this.GuestLoginLabel.AutoSize = true;
@@ -382,6 +382,7 @@
             this.AcceptButton = this.SendButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ClientSize = new System.Drawing.Size(669, 441);
             this.Controls.Add(this.ServerNameTextBox);
             this.Controls.Add(this.ServerNameLabel);
@@ -399,9 +400,11 @@
             this.Controls.Add(this.SendButton);
             this.Controls.Add(this.TypingBox);
             this.Controls.Add(this.RTMainChatBox);
+            this.ForeColor = System.Drawing.SystemColors.Desktop;
             this.Name = "ClientForm";
             this.Text = "Chat-Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClientWindow_FormClosing);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ClientForm_FormClosed);
             this.AuthorizationTabControl.ResumeLayout(false);
             this.SignInTabPage.ResumeLayout(false);
             this.SignInTabPage.PerformLayout();
