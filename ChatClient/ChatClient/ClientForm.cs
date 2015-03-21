@@ -109,7 +109,8 @@ namespace ChatClient
                 {
                     
                     this.CloseClientConnection();
-                    if (!this.IsDisposed && !this.Disposing)
+                    if (!this.RTMainChatBox.IsDisposed && !this.RTMainChatBox.Disposing &&
+                        !this.ConnectButton.IsDisposed && !this.ConnectButton.Disposing)
                     {
                         this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
                         {"Подключение не было произведено. Возможно, сервер прекратил свою работу.",
@@ -161,7 +162,7 @@ namespace ChatClient
                     /*MessageBox.Show("Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано. Информация: " + e.Message,
                         "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);*/
                     /*CloseClientConnection();*/
-                    if (!this.IsDisposed && !this.Disposing)
+                    if (!this.RTMainChatBox.IsDisposed && !this.RTMainChatBox.Disposing)
                     {
                         this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] 
                     {"Поток получения сообщений был экстренно завершен. Соединение с сервером разорвано.",
@@ -171,7 +172,7 @@ namespace ChatClient
                 }
                 catch (ArgumentException exc)
                 {
-                    if (!this.IsDisposed && !this.Disposing)
+                    if (!this.RTMainChatBox.IsDisposed && !this.RTMainChatBox.Disposing)
                     {
                         this.Invoke(new Action<string, Color>(AddTextInChatBox), new object[] { exc.Message + 
                             " Соединение с сервером будет разорвано.", Color.Red });
@@ -185,7 +186,8 @@ namespace ChatClient
                 finally
                 {
                     CloseClientConnection();
-                    if (!this.IsDisposed && !this.Disposing)
+                    if (!this.NickNamesListBox.IsDisposed && !this.NickNamesListBox.Disposing &&
+                        !this.ConnectButton.Disposing && !this.ConnectButton.IsDisposed)
                     {
                         this.Invoke(new Action<List<string>>(RefreshNickNamesListBox), new List<string>());
                         this.Invoke(new voidDel(ActivateConnectButton));
@@ -350,8 +352,9 @@ namespace ChatClient
 
         private void ClientWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            /*this.CloseClientConnection();
-            while (this.GettingMessagesThread.ThreadState == ThreadState.Running)
+            this.CloseClientConnection();
+            //GettingMessagesThread.Join();
+            /*while (this.GettingMessagesThread.ThreadState == ThreadState.Running)
             {
                 Thread.Sleep(200);
             }
@@ -514,7 +517,7 @@ namespace ChatClient
 
         private void ClientForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            CloseClientConnection();
+            //CloseClientConnection();
         }
     }
 }

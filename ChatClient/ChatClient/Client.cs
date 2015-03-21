@@ -128,7 +128,7 @@ namespace ChatClient
                 message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
                 if (IsFailedMessage(message))
                 {
-                    new SocketException();
+                    throw new SocketException();
                 }
                 return message;
             }
