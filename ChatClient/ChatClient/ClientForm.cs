@@ -363,8 +363,8 @@ namespace ChatClient
                 //который должен работать от имени главного потока. Т.е., если поставить Join(),
                 //то все потоки будут ждать, а главный поток так и не сможет выполнить Invoke()
             }*/
-            SearcherServersForm form = new SearcherServersForm();
-            form.Show();
+            /*SearcherServersForm form = new SearcherServersForm();
+            form.Show();*/
         }
         private static Button CreateButtonForGetters(string nameOfGetter)
         {
@@ -515,8 +515,6 @@ namespace ChatClient
         private void ClientForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             CloseClientConnection();
-            SearcherServersForm form = new SearcherServersForm();
-            form.Show();
         }
     }
 }

@@ -115,7 +115,9 @@ namespace ChatClient
             string servName = this.mappedListServers[this.ServersListBox.SelectedIndex].Split(new char[]{' '})[0];
             IPEndPoint tempIEP = this.copyOfListServer[servName];
             ClientForm form = new ClientForm(servName, tempIEP);
-            form.Show();
+            this.Hide();
+            form.ShowDialog();
+            this.Show();
         }
         private void ResetServersList()
         {

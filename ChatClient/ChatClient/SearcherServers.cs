@@ -29,12 +29,6 @@ namespace ChatClient
             InitReceivingBroadcastMessagesThread();
 
         }
-        /*private UdpClient GetTransClient()
-        {
-            UdpClient client = new UdpClient(transPort);
-            client.EnableBroadcast = true;
-            return client;
-        }*/
         private UdpClient GetReceiveClient()
         {
             UdpClient client = new UdpClient(recievPort);
@@ -113,10 +107,6 @@ namespace ChatClient
             string message;
             string tempCommand;
             IPEndPoint currentIEP = null;
-            /*if (commonClient.Client == null)
-            {
-                commonClient = GetRecievClient();
-            }*/
             try
             {
                 
