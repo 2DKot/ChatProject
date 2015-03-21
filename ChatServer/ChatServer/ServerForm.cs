@@ -71,7 +71,8 @@ namespace ChatServer
 
         void UserListChanged(List<User> users)
         {
-            if (!this.Disposing && !this.IsDisposed) this.Invoke(new Action<List<User>>(UpdateUserList), users);
+            if (!this.lbUsers.Disposing && !this.lbUsers.IsDisposed)
+                this.Invoke(new Action<List<User>>(UpdateUserList), users);
 
         }
 
@@ -86,7 +87,8 @@ namespace ChatServer
 
         void LogUpdated(string msg)
         {
-            if(!this.Disposing && !this.IsDisposed) this.Invoke(new Action<string>(UpdateLog), msg);
+            if(!this.tbLog.Disposing && !this.tbLog.IsDisposed) 
+                this.Invoke(new Action<string>(UpdateLog), msg);
         }
 
         void UpdateLog(string msg)

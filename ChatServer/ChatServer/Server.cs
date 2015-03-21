@@ -50,13 +50,12 @@ namespace ChatServer
                 User user;
                 try
                 {
-                    user = new User(listener.AcceptTcpClient());
+                    user = new User(listener.AcceptTcpClient(), rndNick.GetNew());
                 }
                 catch (SocketException)
                 {
                     return;
                 }
-                user.name = rndNick.GetNew();
                 Thread clientThread = new Thread(new ParameterizedThreadStart(ClientThread));
                 clientThread.Start(user);
             }
@@ -86,7 +85,6 @@ namespace ChatServer
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} будет разорвано!", user.name));
                     user.Remove();
-                    user.client.Close();
                     User.SendNamesToAll();
                     return;
                 }
@@ -95,7 +93,6 @@ namespace ChatServer
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} было разорвано!", user.name));
                     user.Remove();
-                    user.client.Close();
                     User.SendNamesToAll();
                     return;
                 }
