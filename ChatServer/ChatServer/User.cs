@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
+using System.IO;
 
 namespace ChatServer
 {
@@ -82,9 +83,10 @@ namespace ChatServer
             return users[i];
         }
 
-        public User(TcpClient client)
+        public User(TcpClient client, string name)
         {
             this.client = client;
+            this.name = name;
             users.Add(this);
         }
 
@@ -106,7 +108,14 @@ namespace ChatServer
         {
             NetworkStream ns = GetStream();
             byte[] sizeBuffer = new byte[4];
-            ns.Read(sizeBuffer, 0, 4);
+            try
+            {
+                ns.Read(sizeBuffer, 0, 4);
+            }
+            catch (IOException)
+            {
+                throw new SocketException();
+            }
             int size = BitConverter.ToInt32(sizeBuffer, 0);
             if (size < 1)
             {

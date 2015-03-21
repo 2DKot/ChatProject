@@ -105,6 +105,7 @@ namespace ChatServer
                 user.SendError("055");
                 User.SendNamesToAll();
                 User.SendMessageToAll("MSG " + name + " вернулся к нам!");
+                user.SendYouAre();
                 Log.Write(name + " зашёл.");
                 User.OnListChanged();
             }
