@@ -23,13 +23,11 @@ namespace ChatClient
         public SearcherServers()
         {
             remoteIEP = new IPEndPoint(IPAddress.Broadcast, transPort);
-            commonClient = GetReceiveClient();
+            commonClient = GetReceivedClient();
             findedIEPs = new Dictionary<string, IPEndPoint>();
             findingStatus = false;
-            InitReceivingBroadcastMessagesThread();
-
         }
-        private UdpClient GetReceiveClient()
+        private UdpClient GetReceivedClient()
         {
             UdpClient client = new UdpClient(recievPort);
             client.EnableBroadcast = true;
@@ -44,7 +42,7 @@ namespace ChatClient
             findedIEPs = new Dictionary<string, IPEndPoint>();
             findingStatus = true;
             SendBroadcastMessage();
-            if (receivingBroadcastMessagesThread.ThreadState == ThreadState.Aborted || 
+            if (receivingBroadcastMessagesThread == null || receivingBroadcastMessagesThread.ThreadState == ThreadState.Aborted || 
                 receivingBroadcastMessagesThread.ThreadState == ThreadState.Stopped)
             {
                 InitReceivingBroadcastMessagesThread();
@@ -56,32 +54,25 @@ namespace ChatClient
         {
             findingStatus = false;
             Interrupt();
-            receivingBroadcastMessagesThread.Join();
-            
+            if (receivingBroadcastMessagesThread != null && receivingBroadcastMessagesThread.ThreadState == ThreadState.Running)
+            {
+                receivingBroadcastMessagesThread.Join();
+            }
         }
         private void SendBroadcastMessage()
         {
             if (commonClient.Client == null)
             {
-                commonClient = GetReceiveClient();
+                commonClient = GetReceivedClient();
             }
             try
             {
-                byte[] messageInBytes = Client.StringToBytes(command);
+                byte[] messageInBytes = Encoding.UTF8.GetBytes(command);
                 commonClient.Send(messageInBytes, messageInBytes.Length, remoteIEP);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //throw ex;
-            }
-            finally
-            {
-                try
-                {
-                    //commonClient.Close();
-                }
-                catch
-                { }
+                
             }
         }
         private void Interrupt()
@@ -97,7 +88,7 @@ namespace ChatClient
                     }
                 }
             }
-            catch (SocketException) 
+            catch (Exception) 
             { };
         }
         private void FindIPsServers()
@@ -109,7 +100,6 @@ namespace ChatClient
             IPEndPoint currentIEP = null;
             try
             {
-                
                 while (findingStatus)
                 {
                     receivedData = commonClient.Receive(ref currentIEP);

@@ -28,14 +28,12 @@ namespace ChatClient
         {
             listOfNickNames = new List<string>();
             InitIgnoredList();
-
         }
     
         private static void InitIgnoredList()
         {
             ignoredCommandsList = new List<string>();
             ignoredCommandsList.Add("NAMES");
-
         }
         public static bool IsCorrectNick(string nick)
         {
@@ -57,6 +55,7 @@ namespace ChatClient
         
         public void DoConnect(IPEndPoint IEP)
         {
+            //Второе подключение - ошибка?
             IPEndPoint remoteIEP = IEP;
             this.clientToServer = new TcpClient();
             this.clientToServer.Connect(remoteIEP);
@@ -79,31 +78,34 @@ namespace ChatClient
             }
             catch
             {
-                throw new SocketException();
+                Exception SE =  new Exception("Невозможно закрыть открытое соединение");
             }
         }
         public void SendText(string message)
         {
+            if (message == null || message == "")
+            {
+                throw new ArgumentException("Неверные входные данные : пустое сообщение для передачи.");
+            }
+            byte[] buffWithMessage = Encoding.UTF8.GetBytes(message);
+            int length = buffWithMessage.Length;
+            byte[] buffWithLength = BitConverter.GetBytes(length);
             try
             {
-                byte[] buffWithMessage = StringToBytes(message);
-                int length = buffWithMessage.Length;
-                byte[] buffWithLength = BitConverter.GetBytes(length);
-                
                 this.clientToServer.GetStream().Write(buffWithLength, 0, buffWithLength.Length);
                 this.clientToServer.GetStream().Write(buffWithMessage, 0, length);
             }
-            catch
+            catch (Exception)
             {
-                throw new SocketException();
+                //Обычный ли будет exception ?
+                throw new Exception("Ошибка при передаче сообщения серверу. Возможно отсутствует подключение.");
             }
-            
         }
         public void SendText(string[] messages)
         {
             if (messages == null || messages.Length == 0)
             {
-                throw new ArgumentException();
+                throw new ArgumentException("Пустой массив сообщений.");
             }
             foreach (string currentMessage in messages)
             {
@@ -113,40 +115,51 @@ namespace ChatClient
         public string GetMessage()
         {
             string message = "";
+            byte[] buffWithLength;
+            int lengthOfBuffWithLength = 4;
+            byte[] buffWithMessage;
+            buffWithLength = new byte[lengthOfBuffWithLength];
+            if (this.clientToServer == null || !this.clientToServer.Connected)
+            {
+                throw new Exception("Невозможно получить сообщение с потока - клиент не подключен.");
+            }
             try
             {
-                byte[] buffWithLength;
-                int lengthOfBuffWithLength = 4;
-                
-                byte[] buffWithMessage;
-
-                buffWithLength = new byte[lengthOfBuffWithLength];
                 this.clientToServer.GetStream().Read(buffWithLength, 0, lengthOfBuffWithLength);
                 int lengthOfMessage = BitConverter.ToInt32(buffWithLength, 0);
                 buffWithMessage = new byte[lengthOfMessage];
                 this.clientToServer.GetStream().Read(buffWithMessage, 0, lengthOfMessage);
                 message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
-                if (IsFailedMessage(message))
-                {
-                    throw new SocketException();
-                }
-                return message;
+                
             }
-            catch (ArgumentException)
+            catch (Exception exc)
             {
-                throw new ArgumentException();
+                //Переопределить свой exception
+                throw new Exception("Разрыв соединения при получении сообщения.");
             }
-            catch
+            if (IsFailedMessage(message))
             {
-                throw new SocketException();
+                throw new Exception("Бескомандное или пустое сообщение со стороны сервера - возможно сервер прекратил свою работу.");
             }
+            return message;
         }
         private bool IsFailedMessage(string text)
         {
-            return text == "";
+            if (text != null)
+            {
+                return text == "";
+            }
+            else
+            {
+                return false;
+            }
         }
         public string HandleRawDataText(string text)
         {
+            if (text == null)
+            {
+                throw new ArgumentNullException("null-строка при обработке.");
+            }
             string handledText = "";
             int firstIndexSpace = text.IndexOf(' ');
             string command = "";
@@ -159,11 +172,12 @@ namespace ChatClient
             else
             { 
                 /*return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";*/
-                throw new ArgumentException("Некорретная команда со стороны сервера."/* - работа могла быть прекращена."*/);
+                throw new ArgumentException("Сообщение не по протоколу - отсутствует команда со стороны сервера."/* - работа могла быть прекращена."*/);
             }
             if (!Reactions.commandToHandler.ContainsKey(command))
             {
-                throw new ArgumentException("Неизвестная команда сервера.");
+                throw new ArgumentException("Сообщение не по протоколу - Неизвестная команда '" + command +
+                "' со стороны сервера. Ее невозможно обработать.");
             }
             handledText = Reactions.commandToHandler[command](restParameters);
             if (ignoredCommandsList.Contains(command))
@@ -176,7 +190,7 @@ namespace ChatClient
         {
             string handledTextMessage = HandleRawDataText(rawData);
             Color textColor = DetermineColor(rawData.Substring(0, rawData.IndexOf(' ')));
-            Message message = new Message(handledTextMessage, textColor);
+            Message message = new Message(rawData, handledTextMessage, textColor);
             return message;
         }
         static private Color DetermineColor(string command)
@@ -210,14 +224,8 @@ namespace ChatClient
                         rColor = Color.Black;
                         break;
                     }
-
             }
             return rColor;
         }
-        static public byte[] StringToBytes(string text)
-        {
-            return (Encoding.UTF8.GetBytes(text));
-        }
-
     }
 }

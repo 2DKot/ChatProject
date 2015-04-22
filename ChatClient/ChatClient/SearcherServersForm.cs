@@ -27,7 +27,6 @@ namespace ChatClient
             this.SearchButton.Text = startSearchButtonText;
             searcher = new SearcherServers();
             mappedListServers = new List<string>();
-            InitRefreshingServerListBoxThread();
         }
         private List<string> MapToList(Dictionary<string, IPEndPoint> dict)
         {
@@ -47,18 +46,17 @@ namespace ChatClient
         }
         private void RefreshListServer()
         {
-            while(refreshingStatus)
-                /*lock (SearcherServers.findedIEPs)*/
+            while (refreshingStatus)
+            {
                 {
+                    if (copyOfListServer != SearcherServers.findedIEPs)
                     {
-                        if (copyOfListServer != SearcherServers.findedIEPs)
-                        {
-                            copyOfListServer = SearcherServers.findedIEPs;
-                            mappedListServers = MapToList(copyOfListServer);
-                            this.Invoke(new Action(ChangeServerListBox));
-                        }
+                        copyOfListServer = SearcherServers.findedIEPs;
+                        mappedListServers = MapToList(copyOfListServer);
+                        this.Invoke(new Action(ChangeServerListBox));
                     }
                 }
+            }
         }
         public void ChangeServerListBox()
         {
@@ -80,7 +78,10 @@ namespace ChatClient
         {
             searcher.EndSearchingServers();
             refreshingStatus = false;
-            refreshingServerListBoxThread.Join();
+            if (refreshingServerListBoxThread != null && refreshingServerListBoxThread.ThreadState == ThreadState.Running)
+            {
+                refreshingServerListBoxThread.Join();
+            }
             this.SearchButton.Text = startSearchButtonText;
         }
         private void StartSearch()
@@ -88,7 +89,8 @@ namespace ChatClient
             ResetServersList();
             searcher.StartSearchingServers();
             refreshingStatus = true;
-            if (refreshingServerListBoxThread.ThreadState == ThreadState.Stopped)
+            if (refreshingServerListBoxThread == null || refreshingServerListBoxThread.ThreadState == ThreadState.Aborted || 
+                refreshingServerListBoxThread.ThreadState == ThreadState.Stopped)
             {
                 InitRefreshingServerListBoxThread();
             }

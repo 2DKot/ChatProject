@@ -404,7 +404,6 @@
             this.Name = "ClientForm";
             this.Text = "Chat-Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClientWindow_FormClosing);
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ClientForm_FormClosed);
             this.AuthorizationTabControl.ResumeLayout(false);
             this.SignInTabPage.ResumeLayout(false);
             this.SignInTabPage.PerformLayout();

@@ -9,16 +9,18 @@ namespace ChatClient
 {
     class Message
     {
+        string rawMessage;
         string textMessage;
         Color textColor;
 
-        public Message(string textMessage)
+        public Message(string rawMessage, string textMessage)
         {
             this.textMessage = textMessage;
             this.textColor = Color.Black;
+            this.rawMessage = rawMessage;
         }
-        public Message(string textMessage, Color color)
-            : this(textMessage)
+        public Message(string rawMessage, string textMessage, Color color)
+            : this(rawMessage, textMessage)
         {
             this.textColor = color;
         }
@@ -34,6 +36,13 @@ namespace ChatClient
             get
             {
                 return textColor;
+            }
+        }
+        public string RawMessage
+        {
+            get
+            {
+                return rawMessage;
             }
         }
     }
