@@ -12,29 +12,31 @@ namespace ChatClient
     class Client
     {
         private static List<string> ignoredCommandsList;
-        TcpClient clientToServer;
-        static Client instance;
-        public List<string> listOfNickNames;
+        private TcpClient clientToServer;
+        //private static Client instance;
+        public List<string> listOfConnectedNickNames;
         public string ownNickName;
-        public static Client GetInstance()
+        /*public static Client GetInstance()
         {
             if (instance == null)
             {
                 instance = new Client();
             }
             return instance;
-        }
-        private Client()
+        }*/
+        /*private*/ public Client()
         {
-            listOfNickNames = new List<string>();
-            InitIgnoredList();
-        }
-    
-        private static void InitIgnoredList()
-        {
+            listOfConnectedNickNames = new List<string>();
+            //InitIgnoredList();
             ignoredCommandsList = new List<string>();
             ignoredCommandsList.Add("NAMES");
         }
+    
+        /*private static void InitIgnoredList()
+        {
+            ignoredCommandsList = new List<string>();
+            ignoredCommandsList.Add("NAMES");
+        }*/
         public static bool IsCorrectNick(string nick)
         {
             bool flagSpaceSymbol = (nick.IndexOf(' ') != -1);
@@ -78,7 +80,7 @@ namespace ChatClient
             }
             catch
             {
-                Exception SE =  new Exception("Невозможно закрыть открытое соединение");
+                /*Exception SE =*/ throw new Exception("Невозможно закрыть открытое соединение");
             }
         }
         public void SendText(string message)
@@ -171,7 +173,6 @@ namespace ChatClient
             }
             else
             { 
-                /*return "Сообщение со стороны клиента - работа с сервером могла быть прекращена.";*/
                 throw new ArgumentException("Сообщение не по протоколу - отсутствует команда со стороны сервера."/* - работа могла быть прекращена."*/);
             }
             if (!Reactions.commandToHandler.ContainsKey(command))
@@ -179,53 +180,18 @@ namespace ChatClient
                 throw new ArgumentException("Сообщение не по протоколу - Неизвестная команда '" + command +
                 "' со стороны сервера. Ее невозможно обработать.");
             }
-            handledText = Reactions.commandToHandler[command](restParameters);
-            if (ignoredCommandsList.Contains(command))
+            if (!ignoredCommandsList.Contains(command))
             {
-                handledText = String.Empty;
+                handledText = Reactions.commandToHandler[command](restParameters, this);
             }
             return handledText;
         }
         public Message ConvertToMessage(string rawData)
         {
             string handledTextMessage = HandleRawDataText(rawData);
-            Color textColor = DetermineColor(rawData.Substring(0, rawData.IndexOf(' ')));
+            Color textColor = Message.DetermineColor(rawData.Substring(0, rawData.IndexOf(' ')));
             Message message = new Message(rawData, handledTextMessage, textColor);
             return message;
-        }
-        static private Color DetermineColor(string command)
-        {
-            Color rColor;
-            switch (command)
-            {
-                case "YOUARE":
-                    {
-                        rColor = Color.Red;
-                        break;
-                    }
-                case "ERROR":
-                    {
-                        rColor = Color.Red;
-                        break;
-                    }
-                case "MSG":
-                    {
-                        rColor = Color.Black;
-                        break;
-                    }
-                case "PRIVMSG":
-                    {
-                        rColor = Color.Indigo;
-                        break;
-                    }
-                default:
-                    {
-                        /*throw new ArgumentException("");*/
-                        rColor = Color.Black;
-                        break;
-                    }
-            }
-            return rColor;
         }
     }
 }

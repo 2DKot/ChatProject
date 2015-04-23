@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace ChatClient
 {
-    delegate string reactionOfServer();
-    delegate string transformationText(string restParameters);
     static class Reactions
     {
-        static public Dictionary<int, reactionOfServer> serviceCodeToDefinition = new Dictionary<int, reactionOfServer>();
-        static public Dictionary<string, transformationText> commandToHandler = new Dictionary<string, transformationText>();
+        static public Dictionary<int, Func<string>> serviceCodeToDefinition = new Dictionary<int, Func<string>>();
+        static public Dictionary<string, Func<string, Client, string>> commandToHandler = new Dictionary<string, Func<string, Client, string>>();
         static Reactions()
         {
             serviceCodeToDefinition.Add(1, ErrorIncorrectFormatOfMessage);
@@ -37,7 +35,7 @@ namespace ChatClient
         }
         static private string UnregisteredNickOrInvalidPassword()
         {
-            Client.GetInstance().ownNickName = "";
+            //Client.GetInstance().ownNickName = "";
             return "Неверный пароль или логин.";
         }
         static private string NickWasSuccessfullyRegistered()
@@ -75,17 +73,17 @@ namespace ChatClient
 
         //*****************************//
 
-        static private string MSG(string restParameters)
+        static private string MSG(string restParameters, Client client)
         {
             return (restParameters);
         }
-        static private string PRIVMSG(string restParameters)
+        static private string PRIVMSG(string restParameters, Client client)
         {
             int indexForDivision = restParameters.IndexOf(' ');
             restParameters = restParameters.Insert(indexForDivision, ":");
             return ("Сообщение от " + restParameters);
         }
-        static private string ERROR(string restParameters)
+        static private string ERROR(string restParameters, Client client)
         {
             string UndefinedError = "Ошибка неизвестного вида.";
             int numberOfError = 0;
@@ -97,20 +95,20 @@ namespace ChatClient
             catch { }
             return UndefinedError;
         }
-        static private string YOUARE(string restParameters)
+        static private string YOUARE(string restParameters, Client client)
         {
-            Client.GetInstance().ownNickName = restParameters;
-            return "Сервер Вас приветствует, " + restParameters + "!";
+            client.ownNickName = restParameters;
+            return "Сервер Вас приветствует, " + restParameters + " !";
         }
-        static private string IAMSERV(string restParameters)
+        static private string IAMSERV(string restParameters, Client client)
         {
             return restParameters;
         }
-        static private string NAMES(string restParameters)
+        static private string NAMES(string restParameters, Client client)
         {
             List<string> newNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
             newNickNames.Insert(0, "Отправить всем");
-            Client.GetInstance().listOfNickNames = newNickNames;
+            client.listOfConnectedNickNames = newNickNames;
             return "Обновление списка пользователей.";
         }
     }

@@ -45,5 +45,39 @@ namespace ChatClient
                 return rawMessage;
             }
         }
+        static public Color DetermineColor(string command)
+        {
+            Color rColor;
+            switch (command)
+            {
+                case "YOUARE":
+                    {
+                        rColor = Color.Red;
+                        break;
+                    }
+                case "ERROR":
+                    {
+                        rColor = Color.Red;
+                        break;
+                    }
+                case "MSG":
+                    {
+                        rColor = Color.Black;
+                        break;
+                    }
+                case "PRIVMSG":
+                    {
+                        rColor = Color.Indigo;
+                        break;
+                    }
+                default:
+                    {
+                        /*throw new ArgumentException("");*/
+                        rColor = Color.Black;
+                        break;
+                    }
+            }
+            return rColor;
+        }
     }
 }

@@ -14,9 +14,14 @@ namespace ChatClient
 {
     public partial class ClientForm : Form
     {
+        private string serverName;
+        private IPEndPoint remoteIEP;
+
         private Thread ConnectionThread;
         private Thread GettingMessagesThread;
         private Thread UpdatingControlsThread;
+
+        private Client client;
         private static bool clientIsConnected;
         private static bool exitMode;
         private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
@@ -27,18 +32,23 @@ namespace ChatClient
         private List<string> currentNicks;
         private Exception serviceException;
 
-        string serverName;
-        IPEndPoint remoteIEP;
         public ClientForm(string serverName, IPEndPoint IEP)
         {
             InitializeComponent();
+            if (IEP == null)
+            {
+                throw new ArgumentNullException("Недопустимое значение для IPEndPoint");
+            }
+            client = new Client();
             this.serverName = serverName;
             this.remoteIEP = IEP;
+            this.IPAdressAndPortTextBox.Text = IEP.ToString();
+            this.ServerNameTextBox.Text = serverName;
             exitMode = false;
             PrepareFormToTyping();
-            SetIdentifedLabels(IEP, serverName);
+            //SetIdentifedLabels(IEP, serverName);
         }
-        private void SetIdentifedLabels(IPEndPoint IEP, string serverName)
+        /*private void SetIdentifedLabels(IPEndPoint IEP, string serverName)
         {
             if (IEP != null)
             {
@@ -49,7 +59,7 @@ namespace ChatClient
                 this.IPAdressAndPortTextBox.Text = "Неизвестно.";
             }
             this.ServerNameTextBox.Text = serverName;
-        }
+        }*/
         private void SendButton_Click(object sender, EventArgs e)
         {
             try
@@ -66,7 +76,7 @@ namespace ChatClient
                     {
                         sendingMessages = new string[] { typedText };
                     }
-                    Client.GetInstance().SendText(sendingMessages);
+                    client.SendText(sendingMessages);
                 }
             }
             catch (Exception exc)
@@ -93,7 +103,7 @@ namespace ChatClient
             {
                 try
                 {
-                    Client.GetInstance().DoConnect(remoteIEP);
+                    client.DoConnect(remoteIEP);
                     clientIsConnected = true;
                     this.EnableUpdatingControls();
                     this.EnableGettingNewInformation();
@@ -171,15 +181,15 @@ namespace ChatClient
                     while (clientIsConnected)
                     {
 
-                        string rawText = Client.GetInstance().GetMessage();
-                        newMessage = Client.GetInstance().ConvertToMessage(rawText);
-                        if (currentNicks != Client.GetInstance().listOfNickNames)
+                        string rawText = client.GetMessage();
+                        newMessage = client.ConvertToMessage(rawText);
+                        if (currentNicks != client.listOfConnectedNickNames)
                         {
-                            currentNicks = Client.GetInstance().listOfNickNames;
+                            currentNicks = client.listOfConnectedNickNames;
                         }
-                        if (currentNick != Client.GetInstance().ownNickName)
+                        if (currentNick != client.ownNickName)
                         {
-                            currentNick = Client.GetInstance().ownNickName;
+                            currentNick = client.ownNickName;
                         }
 
                     }
@@ -203,8 +213,8 @@ namespace ChatClient
         private void CloseClientConnection()
         {
             clientIsConnected = false;
-            Client.GetInstance().ownNickName = "";
-            Client.GetInstance().DoDisconnect();
+            client.ownNickName = "";
+            client.DoDisconnect();
         }
         
         private void DisconnectButton_Click(object sender, EventArgs e)
@@ -269,13 +279,13 @@ namespace ChatClient
         {
             try
             {
-                Client.GetInstance().RequestToGetTempNickName();
+                client.RequestToGetTempNickName();
             }
             catch (Exception exc)
             {
                 MessageBox.Show(/*"Отсутствует подключение к серверу."*/exc.Message,
                             "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Client.GetInstance().ownNickName = "";
+                client.ownNickName = "";
             }
         }
         private void RefreshNickNamesListBox (List<string> nicks)
@@ -357,7 +367,7 @@ namespace ChatClient
             if (this.NickNamesListBox.SelectedItem != null)
             {
                 string selectedNickName = this.NickNamesListBox.SelectedItem.ToString();
-                bool ownNickNameFlag = (selectedNickName == Client.GetInstance().ownNickName);
+                bool ownNickNameFlag = (selectedNickName == client.ownNickName);
                 if (!ownNickNameFlag)
                 {
                     bool toAllFlag = (this.GettersFlowLayoutPanel.Controls.ContainsKey("Отправить всем") || selectedNickName == "Отправить всем");
@@ -413,7 +423,7 @@ namespace ChatClient
         }
         private void RegisterNewLogin(string regLogin, string regPassword)
         {
-            Client.GetInstance().SendText("REG " + regLogin + " " + regPassword);
+            client.SendText("REG " + regLogin + " " + regPassword);
         }
         private void RegisterButton_Click(object sender, EventArgs e)
         {
@@ -455,7 +465,7 @@ namespace ChatClient
                 string tempPass = this.PasswordTextBox.Text;
                 if (Client.IsCorrectNick(tempLogin) && Client.IsCorrectPassword(tempPass))
                 {
-                    Client.GetInstance().SendText("LOGIN " + tempLogin + " " + tempPass);
+                    client.SendText("LOGIN " + tempLogin + " " + tempPass);
                 }
                 else
                 {
@@ -470,7 +480,7 @@ namespace ChatClient
             catch (Exception exc)
             {
                 EditCurrentNickName("");
-                Client.GetInstance().ownNickName = "";
+                client.ownNickName = "";
                 MessageBox.Show("Невозможно авторизовать пользователя. Обратите внимание на соединение. Подробная информация: " + exc.Message,
                     "Отклонено", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
