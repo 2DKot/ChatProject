@@ -10,7 +10,7 @@ namespace ChatServer
         void MSG(User user, string prms)
         {
             string message = "MSG " + user.name + ": " + prms;
-            User.SendMessageToAll(message);
+            userList.SendMessageToAll(message);
         }
 
         void NICK(User user, string prms)
@@ -18,12 +18,12 @@ namespace ChatServer
             rndNick.Remove(user.name);
             string newName = rndNick.GetNew();
             Log.Write(user.name + " changed nick to " + newName);
-            User.SendMessageToAll(("MSG " + user.name + " изменил ник на " + newName));
+            userList.SendMessageToAll(("MSG " + user.name + " изменил ник на " + newName));
             user.name = newName;
             user.SendError("050");
-            User.SendNamesToAll();
+            userList.SendNamesToAll();
             user.SendYouAre();
-            User.OnListChanged();
+            userList.OnListChanged();
         }
 
         void PRIVMSG(User user, string prms)
@@ -36,7 +36,7 @@ namespace ChatServer
             }
             string targetName = prms.Substring(0, splitter);
             string message = prms.Substring(splitter + 1);
-            User target = User.Find(targetName);
+            User target = userList.Find(targetName);
             string formattedMessage = "PRIVMSG " + user.name + ": " + message;
             if (target == null)
             {
@@ -103,11 +103,11 @@ namespace ChatServer
             {
                 user.name = name;
                 user.SendError("055");
-                User.SendNamesToAll();
-                User.SendMessageToAll("MSG " + name + " вернулся к нам!");
+                userList.SendNamesToAll();
+                userList.SendMessageToAll("MSG " + name + " вернулся к нам!");
                 user.SendYouAre();
                 Log.Write(name + " зашёл.");
-                User.OnListChanged();
+                userList.OnListChanged();
             }
             else
             {

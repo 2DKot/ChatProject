@@ -10,7 +10,7 @@ using System.IO;
 namespace ChatServer
 {
 
-    partial class Server
+    public partial class Server
     {
         public string name;
         delegate void command(User user, string prms);
@@ -20,7 +20,8 @@ namespace ChatServer
         bool stopped;
         Register register;
         RandomNick rndNick = new RandomNick();
-
+        public UserList userList = new UserList();
+        Thread serverThread;
 
         public Server(string name = "chatServer")
         {
@@ -45,21 +46,26 @@ namespace ChatServer
             findingService.Start(name);
             listener = new TcpListener(IPAddress.Any, 666);
             listener.Start();
-            while (!stopped)
+            serverThread = new Thread(() =>
             {
-                User user;
-                try
+                while (!stopped)
                 {
-                    user = new User(listener.AcceptTcpClient(), rndNick.GetNew());
+                    User user;
+                    try
+                    {
+                        user = new User(listener.AcceptTcpClient(), rndNick.GetNew());
+                        userList.Add(user);
+                    }
+                    catch (SocketException)
+                    {
+                        return;
+                    }
+                    Thread clientThread = new Thread(new ParameterizedThreadStart(ClientThread));
+                    clientThread.Start(user);
                 }
-                catch (SocketException)
-                {
-                    return;
-                }
-                Thread clientThread = new Thread(new ParameterizedThreadStart(ClientThread));
-                clientThread.Start(user);
-            }
-            Log.Write("Сервер остановлен!");
+                Log.Write("Сервер остановлен!");
+            });
+            serverThread.Start();
         }
 
         void ClientThread(Object userObject)
@@ -67,12 +73,12 @@ namespace ChatServer
             User user = (User)userObject;
             Log.Write(String.Format("Подключен клиент: {0}",
                 user.client.Client.RemoteEndPoint.ToString()));
+            user.SendMessage("YOUARE " + user.name);
             string date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
             user.SendMessage(String.Format("MSG Тебя приветствует сервер {0}! Время на сервере: {1}",
                 name, date));
-            User.SendMessageToAll("MSG " + user.name + " присоединился к чату.");
-            User.SendNamesToAll();
-            user.SendMessage("YOUARE " + user.name);
+            userList.SendMessageToAll("MSG " + user.name + " присоединился к чату.");
+            userList.SendNamesToAll();
             while (!stopped)
             {
                 string mess = "";
@@ -84,16 +90,16 @@ namespace ChatServer
                 {
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} будет разорвано!", user.name));
-                    user.Remove();
-                    User.SendNamesToAll();
+                    userList.Remove(user);
+                    userList.SendNamesToAll();
                     return;
                 }
                 catch (ObjectDisposedException)
                 {
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} было разорвано!", user.name));
-                    user.Remove();
-                    User.SendNamesToAll();
+                    userList.Remove(user);
+                    userList.SendNamesToAll();
                     return;
                 }
                 //Log.Write("получил: "+mess);
@@ -126,7 +132,7 @@ namespace ChatServer
                 catch (IOException)
                 {
                     Log.Write("Ошибка отправки сообщения. Соединение будет разорвано.");
-                    user.Remove();
+                    userList.Remove(user);
                     return;
                 }
             }
@@ -135,11 +141,12 @@ namespace ChatServer
         public void Stop()
         {
             Log.Write("Остановка..");
-            User.SendErrorToAll("100");
-            User.RemoveAll();
+            userList.SendErrorToAll("100");
+            userList.RemoveAll();
             if (listener != null) listener.Stop();
             if (findingService != null) findingService.Stop();
             stopped = true;
+            serverThread.Join();
         } 
     }
 }

@@ -15,7 +15,6 @@ namespace ChatServer
     public partial class ServerForm : Form
     {
         Server server;
-        Thread serverThread;
         public ServerForm()
         {
             InitializeComponent();
@@ -24,7 +23,7 @@ namespace ChatServer
         private void ServerForm_Load(object sender, EventArgs e)
         {
             server = new Server();
-            User.SetOnListChangedHandler(UserListChanged);
+            server.userList.listChangedHandler += UserListChanged;
             Log.LogEvent += LogUpdated;
             IPHostEntry host;
             host = Dns.GetHostEntry(Dns.GetHostName());
@@ -40,8 +39,7 @@ namespace ChatServer
         {
             bStartServer.Enabled = false;
             server.name = tbServerName.Text;
-            serverThread = new Thread(server.Start);
-            serverThread.Start();
+            server.Start();
             bStartServer.Visible = false;
             bStopServer.Visible = true;
             bStopServer.Enabled = true;
@@ -55,7 +53,6 @@ namespace ChatServer
             bStopServer.Enabled = false;
             if (server == null) return;
             server.Stop();
-            serverThread.Join();
             bStartServer.Visible = true;
             bStartServer.Enabled = true;
             bStopServer.Visible = false;
@@ -99,15 +96,15 @@ namespace ChatServer
         private void bKick_Click(object sender, EventArgs e)
         {
             if (lbUsers.SelectedIndex < 0) return;
-            User user = User.Get(lbUsers.SelectedIndex);
-            user.Remove();
+            User user = server.userList[lbUsers.SelectedIndex];
+            server.userList.Remove(user);
         }
 
         private void bSendToAll_Click(object sender, EventArgs e)
         {
             string msg = tbMessage.Text;
             if (!cbDebug.Checked) msg = "MSG " + msg;
-            User.SendMessageToAll(msg);
+            server.userList.SendMessageToAll(msg);
         }
 
         private void bSendToCurrent_Click(object sender, EventArgs e)
@@ -115,7 +112,7 @@ namespace ChatServer
             if (lbUsers.SelectedIndex < 0) return;
             string msg = tbMessage.Text;
             if (!cbDebug.Checked) msg = "MSG " + msg;
-            User.Get(lbUsers.SelectedIndex).SendMessage(msg);
+            server.userList[lbUsers.SelectedIndex].SendMessage(msg);
         }
 
         private void bClearLog_Click(object sender, EventArgs e)
