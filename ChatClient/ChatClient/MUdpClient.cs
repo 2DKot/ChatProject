@@ -10,10 +10,6 @@ namespace ChatClient
 {
     public interface IUdpClient
     {
-        int ReceivePort
-        {
-            get;
-        }
         void Send(byte[] dgram, int bytes, IPEndPoint endPoint);
         //Null'ится после каждого рассоединения
         bool IsClientNull();
@@ -24,24 +20,14 @@ namespace ChatClient
     public class MUdpClient : IUdpClient
     {
         private UdpClient client;
-        private int receivePort;
-        public MUdpClient(int receivePort)
+        public MUdpClient()
         {
-            this.receivePort = receivePort;
             InitializeUdpClient();
-
         }
         public void InitializeUdpClient()
         {
-            this.client = new UdpClient(this.receivePort);
+            this.client = new UdpClient();
             this.client.EnableBroadcast = true;
-        }
-        public int ReceivePort
-        {
-            get
-            {
-                return receivePort;
-            }
         }
         public bool IsClientNull()
         {

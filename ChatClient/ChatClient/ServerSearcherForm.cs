@@ -25,7 +25,7 @@ namespace ChatClient
             InitializeComponent();
             this.ConnectButton.Enabled = false;
             this.SearchButton.Text = startSearchButtonText;
-            searcher = new ServerSearcher(new MUdpClient(668), 667);
+            searcher = new ServerSearcher(new MUdpClient(), 667);
             mappedListServers = new List<string>();
         }
         private List<string> MapToList(Dictionary<string, IPEndPoint> dict)
@@ -49,9 +49,9 @@ namespace ChatClient
             while (refreshingStatus)
             {
                 {
-                    if (copyOfListServer != /*ServerSearcher.FindedIpEPs*/searcher.FindedIpEPs)
+                    if (copyOfListServer != searcher.FindedIpEPs)
                     {
-                        copyOfListServer = /*ServerSearcher.FindedIpEPs*/ searcher.FindedIpEPs;
+                        copyOfListServer = searcher.FindedIpEPs;
                         mappedListServers = MapToList(copyOfListServer);
                         this.Invoke(new Action(ChangeServerListBox));
                     }
@@ -61,7 +61,6 @@ namespace ChatClient
         public void ChangeServerListBox()
         {
             ServersListBox.DataSource = mappedListServers;
-            
         }
         private void SearchButton_Click(object sender, EventArgs e)
         {
@@ -99,7 +98,6 @@ namespace ChatClient
             }
             refreshingServerListBoxThread.Start();
             this.SearchButton.Text = stopSearchButtonText;
-
         }
 
         private void ServersListBox_SelectedIndexChanged(object sender, EventArgs e)
