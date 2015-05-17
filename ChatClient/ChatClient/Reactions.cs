@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace ChatClient
 {
-    static class Reactions
+    public static class Reactions
     {
-        static public Dictionary<int, Func<string>> serviceCodeToDefinition = new Dictionary<int, Func<string>>();
-        static public Dictionary<string, Func<string, Client, string>> commandToHandler = new Dictionary<string, Func<string, Client, string>>();
+        static private Dictionary<int, Func<string>> serviceCodeToDefinition = new Dictionary<int, Func<string>>();
+        static private Dictionary<string, Func<string, string>> commandToHandler = new Dictionary<string, Func<string, string>>();
         static Reactions()
         {
             serviceCodeToDefinition.Add(1, ErrorIncorrectFormatOfMessage);
@@ -24,6 +24,7 @@ namespace ChatClient
             serviceCodeToDefinition.Add(100, ErrorServerIsGoingToStop);
             //*****************************//
             commandToHandler.Add("MSG", MSG);
+            commandToHandler.Add("IAMSERV", IAMSERV);
             commandToHandler.Add("ERROR", ERROR);
             commandToHandler.Add("PRIVMSG", PRIVMSG);
             commandToHandler.Add("NAMES", NAMES);
@@ -73,17 +74,17 @@ namespace ChatClient
 
         //*****************************//
 
-        static private string MSG(string restParameters, Client client)
+        static private string MSG(string restParameters)
         {
             return (restParameters);
         }
-        static private string PRIVMSG(string restParameters, Client client)
+        static private string PRIVMSG(string restParameters)
         {
             int indexForDivision = restParameters.IndexOf(' ');
             restParameters = restParameters.Insert(indexForDivision, ":");
             return ("Сообщение от " + restParameters);
         }
-        static private string ERROR(string restParameters, Client client)
+        static private string ERROR(string restParameters)
         {
             string UndefinedError = "Ошибка неизвестного вида.";
             int numberOfError = 0;
@@ -95,21 +96,27 @@ namespace ChatClient
             catch { }
             return UndefinedError;
         }
-        static private string YOUARE(string restParameters, Client client)
+        static private string YOUARE(string restParameters)
         {
-            client.ownNickName = restParameters;
             return "Сервер Вас приветствует, " + restParameters + " !";
         }
-        static private string IAMSERV(string restParameters, Client client)
+        static private string IAMSERV(string restParameters)
         {
-            return restParameters;
+            //Обновление параметров
+            return ("Сервер представлен под именем + " + restParameters + ".");
         }
-        static private string NAMES(string restParameters, Client client)
+        static private string NAMES(string restParameters)
         {
-            List<string> newNickNames = (restParameters.Split(new char[] { ' ' })).ToList();
-            newNickNames.Insert(0, "Отправить всем");
-            client.listOfConnectedNickNames = newNickNames;
             return "Обновление списка пользователей.";
+        }
+
+        public static Func<string, string> GetCommandHandler(string command)
+        {
+            return commandToHandler[command];
+        }
+        public static bool ContainsHandlerForCommand(string command)
+        {
+            return commandToHandler.ContainsKey(command);
         }
     }
 }

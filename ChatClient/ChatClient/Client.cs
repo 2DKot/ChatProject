@@ -9,82 +9,120 @@ using System.Threading;
 
 namespace ChatClient
 {
-    class Client
+
+    public class Client
     {
-        private static List<string> ignoredCommandsList;
-        private TcpClient clientToServer;
-        //private static Client instance;
-        public List<string> listOfConnectedNickNames;
-        public string ownNickName;
-        /*public static Client GetInstance()
+        private static List<string> ignoredCommands;
+        protected Dictionary<string, Action<string>> sideEffectCommandsToDelegate;
+        private ITcpClient serviceClient;
+        //private TcpClient clientToServer;
+        private List<string> onlineUsers;
+        private string ownNickName;
+        public Client(ITcpClient client)
         {
-            if (instance == null)
-            {
-                instance = new Client();
-            }
-            return instance;
-        }*/
-        /*private*/ public Client()
-        {
-            listOfConnectedNickNames = new List<string>();
-            //InitIgnoredList();
-            ignoredCommandsList = new List<string>();
-            ignoredCommandsList.Add("NAMES");
+            serviceClient = client;
+            ownNickName = String.Empty;
+            onlineUsers = new List<string>();
+            ignoredCommands = new List<string>();
+            ignoredCommands.Add("NAMES");
+            sideEffectCommandsToDelegate = new Dictionary<string, Action<string>>();
+            sideEffectCommandsToDelegate.Add("YOUARE", (nick) => { this.ownNickName = nick; });
+            sideEffectCommandsToDelegate.Add("NAMES", (nicks) => 
+            { 
+                onlineUsers = new List<string>(nicks.Split(' '));
+                onlineUsers.Insert(0, "Отправить всем");
+            });
         }
-    
-        /*private static void InitIgnoredList()
-        {
-            ignoredCommandsList = new List<string>();
-            ignoredCommandsList.Add("NAMES");
-        }*/
         public static bool IsCorrectNick(string nick)
         {
+            if (nick == null)
+            {
+                throw new ArgumentNullException("Недопустимый входной параметр (null))");
+            }
+            if (nick.Length == 0)
+            {
+                throw new ArgumentException("Недопустимый входной параметр (пустая строка)");
+            }
             bool flagSpaceSymbol = (nick.IndexOf(' ') != -1);
-
             return !(flagSpaceSymbol);
         }
         public static bool IsCorrectPassword(string password)
         {
-            bool flagSpaceSymbol = (password.IndexOf(' ') != -1);
-
-            return !(flagSpaceSymbol);
+            if (password == null)
+            {
+                throw new ArgumentNullException("Недопустимый входной параметр (null)");
+            }
+            if (password.Length == 0)
+            {
+                throw new ArgumentException("Недопустимый входной параметр (пустая строка для пароля)");
+            }
+            return true;
         }
         public void RequestToGetTempNickName()
         {
             string command = "NICK";
-            SendText(command);
+            SendTextData(command);
+        }
+        public string OwnNickName
+        {
+            get
+            {
+                return this.ownNickName;
+            }
+            /*set
+            {
+                if (!System.Environment.StackTrace.Contains("YOUARE"))
+                {
+                    throw new ArgumentException("Недопустимое окружение для изменения переменной.");
+                }
+                this.ownNickName = value;
+            }*/
+        }
+
+        public List<string> OnlineUsers
+        {
+            get
+            {
+                return this.onlineUsers;
+            }
+            /*set
+            {
+                if (!System.Environment.StackTrace.Contains("NAMES"))
+                {
+                    throw new ArgumentException("Недопустимое окружение для изменения переменной");
+                }
+                this.onlineUsers = value;
+            }*/
         }
         
         public void DoConnect(IPEndPoint IEP)
         {
             //Второе подключение - ошибка?
-            IPEndPoint remoteIEP = IEP;
-            this.clientToServer = new TcpClient();
-            this.clientToServer.Connect(remoteIEP);
-            if (this.clientToServer.Client == null)
+            if (IEP == null)
             {
-                throw new SocketException();
+                throw new ArgumentNullException("Значение объекта IPEndPoint равно null");
             }
+            if (!this.serviceClient.IsConnected())
+            {
+                this.serviceClient.Connect(IEP);
+            }
+
         }
         public void DoDisconnect()
         {
-            try
+            
+            if (this.serviceClient.IsConnected())
             {
-               /**/ if (this.clientToServer != null && 
-                   this.clientToServer.Client != null && 
-                   this.clientToServer.Client.Connected)
-                {
-                    this.clientToServer.Close();
-                    this.clientToServer.Client= null;
-                }
+                this.serviceClient.Close();
             }
-            catch
-            {
-                /*Exception SE =*/ throw new Exception("Невозможно закрыть открытое соединение");
-            }
+            this.ownNickName = "";
         }
-        public void SendText(string message)
+        public void SendTextData(string message)
         {
+            if (!this.serviceClient.IsConnected())
+            {
+                throw new Exception("Клиент не имел подключения");
+            }
             if (message == null || message == "")
             {
                 throw new ArgumentException("Неверные входные данные : пустое сообщение для передачи.");
@@ -94,16 +132,16 @@ namespace ChatClient
             byte[] buffWithLength = BitConverter.GetBytes(length);
             try
             {
-                this.clientToServer.GetStream().Write(buffWithLength, 0, buffWithLength.Length);
-                this.clientToServer.GetStream().Write(buffWithMessage, 0, length);
+                this.serviceClient.Write(buffWithLength, 0, buffWithLength.Length);
+                this.serviceClient.Write(buffWithMessage, 0, length);
             }
             catch (Exception)
             {
-                //Обычный ли будет exception ?
                 throw new Exception("Ошибка при передаче сообщения серверу. Возможно отсутствует подключение.");
             }
+            
         }
-        public void SendText(string[] messages)
+        public void SendTextData(string[] messages)
         {
             if (messages == null || messages.Length == 0)
             {
@@ -111,58 +149,47 @@ namespace ChatClient
             }
             foreach (string currentMessage in messages)
             {
-                SendText(currentMessage);
+                SendTextData(currentMessage);
             }
         }
-        public string GetMessage()
+        public string GetTextData()
         {
+            if (!this.serviceClient.IsConnected())
+            {
+                throw new Exception("Невозможно получить сообщение с потока - клиент не подключен.");
+            }
             string message = "";
             byte[] buffWithLength;
             int lengthOfBuffWithLength = 4;
             byte[] buffWithMessage;
             buffWithLength = new byte[lengthOfBuffWithLength];
-            if (this.clientToServer == null || !this.clientToServer.Connected)
-            {
-                throw new Exception("Невозможно получить сообщение с потока - клиент не подключен.");
-            }
+
             try
             {
-                this.clientToServer.GetStream().Read(buffWithLength, 0, lengthOfBuffWithLength);
+                buffWithLength = this.serviceClient.Read(0, lengthOfBuffWithLength);
                 int lengthOfMessage = BitConverter.ToInt32(buffWithLength, 0);
-                buffWithMessage = new byte[lengthOfMessage];
-                this.clientToServer.GetStream().Read(buffWithMessage, 0, lengthOfMessage);
+                buffWithMessage = this.serviceClient.Read(0, lengthOfMessage);
                 message = System.Text.Encoding.UTF8.GetString(buffWithMessage);
-                
             }
-            catch (Exception exc)
+            catch (Exception)
             {
                 //Переопределить свой exception
                 throw new Exception("Разрыв соединения при получении сообщения.");
             }
-            if (IsFailedMessage(message))
+            if (IsFailedTextData(message))
             {
                 throw new Exception("Бескомандное или пустое сообщение со стороны сервера - возможно сервер прекратил свою работу.");
             }
             return message;
         }
-        private bool IsFailedMessage(string text)
+        private bool IsFailedTextData(string text)
         {
-            if (text != null)
-            {
-                return text == "";
-            }
-            else
-            {
-                return false;
-            }
+            return text == "";
         }
-        public string HandleRawDataText(string text)
+        private string HandleRawDataText(string text)
         {
-            if (text == null)
-            {
-                throw new ArgumentNullException("null-строка при обработке.");
-            }
-            string handledText = "";
+            
+            string handledText;
             int firstIndexSpace = text.IndexOf(' ');
             string command = "";
             string restParameters = "";
@@ -175,20 +202,29 @@ namespace ChatClient
             { 
                 throw new ArgumentException("Сообщение не по протоколу - отсутствует команда со стороны сервера."/* - работа могла быть прекращена."*/);
             }
-            if (!Reactions.commandToHandler.ContainsKey(command))
+            if (sideEffectCommandsToDelegate.ContainsKey(command))
+            {
+                sideEffectCommandsToDelegate[command](restParameters);
+            }
+            if (!Reactions.ContainsHandlerForCommand(command))
             {
                 throw new ArgumentException("Сообщение не по протоколу - Неизвестная команда '" + command +
                 "' со стороны сервера. Ее невозможно обработать.");
             }
-            if (!ignoredCommandsList.Contains(command))
+            handledText = Reactions.GetCommandHandler(command)(restParameters);
+            if (ignoredCommands.Contains(command))
             {
-                handledText = Reactions.commandToHandler[command](restParameters, this);
+                handledText = "";
             }
             return handledText;
         }
-        public Message ConvertToMessage(string rawData)
+        public Message ConvertTextDataToMessage(string rawData)
         {
-            string handledTextMessage = HandleRawDataText(rawData);
+            if (rawData == null)
+            {
+                throw new ArgumentNullException("null-строка при обработке.");
+            }
+            string handledTextMessage = this.HandleRawDataText(rawData);
             Color textColor = Message.DetermineColor(rawData.Substring(0, rawData.IndexOf(' ')));
             Message message = new Message(rawData, handledTextMessage, textColor);
             return message;

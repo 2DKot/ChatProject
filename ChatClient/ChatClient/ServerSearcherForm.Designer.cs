@@ -1,6 +1,6 @@
 ﻿namespace ChatClient
 {
-    partial class SearcherServersForm
+    partial class ServerSearcherForm
     {
         /// <summary>
         /// Required designer variable.

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ChatClient
 {
-    class Message
+   public class Message
     {
         string rawMessage;
         string textMessage;
@@ -68,6 +68,11 @@ namespace ChatClient
                 case "PRIVMSG":
                     {
                         rColor = Color.Indigo;
+                        break;
+                    }
+                case "IAMSERV":
+                    {
+                        rColor = Color.Red;
                         break;
                     }
                 default:

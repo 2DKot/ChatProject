@@ -11,21 +11,21 @@ using System.Windows.Forms;
 
 namespace ChatClient
 {
-    public partial class SearcherServersForm : Form
+    public partial class ServerSearcherForm : Form
     {
-        private SearcherServers searcher;
+        private ServerSearcher searcher;
         private static readonly string stopSearchButtonText = "Стоп";
         private static readonly string startSearchButtonText = "Поиск";
         private List<string> mappedListServers;
         private Dictionary<string, IPEndPoint> copyOfListServer;
         private bool refreshingStatus;
         private Thread refreshingServerListBoxThread;
-        public SearcherServersForm()
+        public ServerSearcherForm()
         {
             InitializeComponent();
             this.ConnectButton.Enabled = false;
             this.SearchButton.Text = startSearchButtonText;
-            searcher = new SearcherServers();
+            searcher = new ServerSearcher(new MUdpClient(668), 667);
             mappedListServers = new List<string>();
         }
         private List<string> MapToList(Dictionary<string, IPEndPoint> dict)
@@ -49,9 +49,9 @@ namespace ChatClient
             while (refreshingStatus)
             {
                 {
-                    if (copyOfListServer != SearcherServers.findedIEPs)
+                    if (copyOfListServer != /*ServerSearcher.FindedIpEPs*/searcher.FindedIpEPs)
                     {
-                        copyOfListServer = SearcherServers.findedIEPs;
+                        copyOfListServer = /*ServerSearcher.FindedIpEPs*/ searcher.FindedIpEPs;
                         mappedListServers = MapToList(copyOfListServer);
                         this.Invoke(new Action(ChangeServerListBox));
                     }

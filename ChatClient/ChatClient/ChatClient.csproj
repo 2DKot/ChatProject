@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MTcpClient.cs" />
+    <Compile Include="MUdpClient.cs" />
     <Compile Include="Reactions.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientForm.cs">
@@ -55,12 +57,12 @@
     <Compile Include="Message.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SearcherServers.cs" />
-    <Compile Include="SearcherServersForm.cs">
+    <Compile Include="ServerSearcher.cs" />
+    <Compile Include="ServerSearcherForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SearcherServersForm.Designer.cs">
-      <DependentUpon>SearcherServersForm.cs</DependentUpon>
+    <Compile Include="ServerSearcherForm.Designer.cs">
+      <DependentUpon>ServerSearcherForm.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="ClientForm.resx">
       <DependentUpon>ClientForm.cs</DependentUpon>
@@ -75,9 +77,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SearcherServersForm.resx">
-      <DependentUpon>SearcherServersForm.cs</DependentUpon>
+    <EmbeddedResource Include="ServerSearcherForm.resx">
+      <DependentUpon>ServerSearcherForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
