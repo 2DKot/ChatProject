@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
+using NUnit.Framework;
 
 namespace ChatServerTest
 {
@@ -63,6 +64,13 @@ namespace ChatServerTest
             RecieveMessage();
             RecieveMessage();
             RecieveMessage();
+        }
+
+        public void SendAndRecieve(string send, string recieve)
+        {
+            SendMessage(send);
+            string recMsg = RecieveMessage();
+            Assert.AreEqual(recieve, recMsg);
         }
     }
 }

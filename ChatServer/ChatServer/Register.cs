@@ -6,29 +6,41 @@ using System.IO;
 
 namespace ChatServer
 {
-    class Register
+    public class Register
     {
         const string regFile = "users.txt";
         ConcurrentDictionary<string, string> regUnits = new ConcurrentDictionary<string, string>();
+        Object handler = new Object();
+
+        public void RemoveAll()
+        {
+            lock (handler)
+            {
+                File.Delete(regFile);
+            }
+        }
 
         public bool Load()
         {
-            if (!File.Exists(regFile)) return false;
-
-            regUnits = new ConcurrentDictionary<string, string>();
-            StreamReader reader = new StreamReader(regFile);
-            while (!reader.EndOfStream)
+            lock (handler)
             {
-                string[] unitRaw = reader.ReadLine().Split(' ');
-                regUnits.AddOrUpdate(unitRaw[0], unitRaw[1], (key, value) => value);
+                if (!File.Exists(regFile)) return false;
+
+                regUnits = new ConcurrentDictionary<string, string>();
+                StreamReader reader = new StreamReader(regFile);
+                while (!reader.EndOfStream)
+                {
+                    string[] unitRaw = reader.ReadLine().Split(' ');
+                    regUnits.AddOrUpdate(unitRaw[0], unitRaw[1], (key, value) => value);
+                }
+                reader.Close();
+                return true;
             }
-            reader.Close();
-            return true;
         }
 
-        public bool Save()
+        public void Save()
         {
-            try
+            lock (handler)
             {
                 StreamWriter writer = new StreamWriter(regFile);
                 foreach (var unit in regUnits)
@@ -37,8 +49,6 @@ namespace ChatServer
                 }
                 writer.Close();
             }
-            catch { return false; }
-            return true;
         }
 
         public bool Add(string name, string password)
@@ -47,27 +57,24 @@ namespace ChatServer
             {
                 return false;
             }
-            regUnits.AddOrUpdate(name, password, (key, val) => val);
-            return true;
-        }
-
-        public bool Remove(string name)
-        {
-            /*
-            if (!regUnits.ContainsKey(name))
-            {
-                return false;
-            }
-            regUnits.Remove(name);
-            
-            return true;
-            */
-            return false;
+            bool result = true;
+            regUnits.AddOrUpdate(name, password, (key, val) => {
+                result = false;
+                return val;
+            });
+            return result;
         }
 
         public bool Check(string name, string password)
         {
-            return regUnits[name] == password;
+            try
+            {
+                return regUnits[name] == password;
+            }
+            catch (System.Collections.Generic.KeyNotFoundException)
+            {
+                return false;
+            }
         }
 
         public bool Contains(string name)

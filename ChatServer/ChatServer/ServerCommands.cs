@@ -9,6 +9,12 @@ namespace ChatServer
     {
         void MSG(User user, string prms)
         {
+            int splitter = prms.IndexOf(' ');
+            if (splitter == -1)
+            {
+                user.SendError("001");
+                throw new FormatException("MSG <msg>");
+            }
             string message = "MSG " + user.name + ": " + prms;
             userList.SendMessageToAll(message);
         }
@@ -66,11 +72,13 @@ namespace ChatServer
             SendMessage(user, message);
         }
         */
-         
+        
+        /*
         void DATE(User user, string prms)
         {
             user.SendMessage("MSG " + DateTime.Now.Date.ToLongDateString());
         }
+        */
 
         void REG(User user, string prms)
         {
@@ -82,7 +90,7 @@ namespace ChatServer
             if (register.Add(splitted[0], splitted[1]))
             {
                 user.SendError("053");
-                register.Save();
+                register.   Save();
             }
             else
             {

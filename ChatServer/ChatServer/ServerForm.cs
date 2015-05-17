@@ -46,11 +46,13 @@ namespace ChatServer
             this.Text = "ChatServer (online)";
             lState.BackColor = Color.PaleGreen;
             lState.Text = "online";
+            bClearUserBase.Visible = true;
         }
 
         private void bStopServer_Click(object sender, EventArgs e)
         {
             bStopServer.Enabled = false;
+            bClearUserBase.Visible = false;
             if (server == null) return;
             server.Stop();
             bStartServer.Visible = true;
@@ -58,7 +60,7 @@ namespace ChatServer
             bStopServer.Visible = false;
             this.Text = "ChatServer";
             lState.BackColor = Color.IndianRed;
-            lState.Text = "offline";
+            lState.Text = "offline"; 
         }
 
         private void lHelp_Click(object sender, EventArgs e)
@@ -132,6 +134,11 @@ namespace ChatServer
         private void ServerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             server.Stop();
+        }
+
+        private void bClearUserBase_Click(object sender, EventArgs e)
+        {
+            server.register.RemoveAll();
         }
     }
 }

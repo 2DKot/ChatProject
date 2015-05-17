@@ -47,6 +47,7 @@
             this.bClearLog = new System.Windows.Forms.Button();
             this.bDeleteLogFile = new System.Windows.Forms.Button();
             this.lState = new System.Windows.Forms.Label();
+            this.bClearUserBase = new System.Windows.Forms.Button();
             this.gbSendMessage.SuspendLayout();
             this.gbUsers.SuspendLayout();
             this.SuspendLayout();
@@ -241,12 +242,25 @@
             this.lState.TabIndex = 16;
             this.lState.Text = "offline";
             // 
+            // bClearUserBase
+            // 
+            this.bClearUserBase.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.bClearUserBase.Location = new System.Drawing.Point(286, 82);
+            this.bClearUserBase.Name = "bClearUserBase";
+            this.bClearUserBase.Size = new System.Drawing.Size(189, 23);
+            this.bClearUserBase.TabIndex = 17;
+            this.bClearUserBase.Text = "Очистить базу пользователей";
+            this.bClearUserBase.UseVisualStyleBackColor = true;
+            this.bClearUserBase.Visible = false;
+            this.bClearUserBase.Click += new System.EventHandler(this.bClearUserBase_Click);
+            // 
             // ServerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.ClientSize = new System.Drawing.Size(808, 287);
+            this.Controls.Add(this.bClearUserBase);
             this.Controls.Add(this.lState);
             this.Controls.Add(this.bDeleteLogFile);
             this.Controls.Add(this.bClearLog);
@@ -291,5 +305,6 @@
         private System.Windows.Forms.CheckBox cbDebug;
         private System.Windows.Forms.Button bDeleteLogFile;
         private System.Windows.Forms.Label lState;
+        private System.Windows.Forms.Button bClearUserBase;
     }
 }

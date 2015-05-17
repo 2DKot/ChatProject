@@ -18,7 +18,7 @@ namespace ChatServer
         TcpListener listener;
         FindingService findingService;
         bool stopped;
-        Register register;
+        public Register register;
         RandomNick rndNick = new RandomNick();
         public UserList userList = new UserList();
         Thread serverThread;
@@ -30,7 +30,7 @@ namespace ChatServer
             commandsMap.Add("NICK", NICK);
             commandsMap.Add("PRIVMSG", PRIVMSG);
             //commandsMap.Add("NAMES", NAMES);
-            commandsMap.Add("DATE", DATE);
+            //commandsMap.Add("DATE", DATE);
             commandsMap.Add("REG", REG);
             commandsMap.Add("LOGIN", LOGIN);
             commandsMap.Add("WHOIAM", WHOIAM);
@@ -146,7 +146,8 @@ namespace ChatServer
             if (listener != null) listener.Stop();
             if (findingService != null) findingService.Stop();
             stopped = true;
-            serverThread.Join();
-        } 
+            if(serverThread != null) serverThread.Join();
+            Log.Write("Сервер остановлен!");
+        }
     }
 }
