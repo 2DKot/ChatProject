@@ -76,7 +76,10 @@ namespace ChatClient
         }
         private void StopSearch()
         {
-            searcher.EndSearchingServers();
+            if (searcher.FindingStatus)
+            {
+                searcher.EndSearchingServers();
+            }
             refreshingStatus = false;
             if (refreshingServerListBoxThread != null && refreshingServerListBoxThread.ThreadState == ThreadState.Running)
             {
