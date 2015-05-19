@@ -134,7 +134,7 @@ namespace ChatClientTests
             client.Receive(ref res1).Returns(x =>
             {
                 x[0] = res2;
-                return Encoding.UTF8.GetBytes("IAMSERV " + "Kongo");
+                return Encoding.UTF8.GetBytes("IAMSERV " + "Kongo1");
             });
             res2.Port = 666;
             client.When(x => x.Receive(ref res2)).Throw(new SocketException());
@@ -144,7 +144,7 @@ namespace ChatClientTests
 
             //Assert
             Assert.IsFalse(searcher.FindingStatus);
-            client.ReceivedWithAnyArgs(3).Receive(ref iep);
+            client.ReceivedWithAnyArgs(2).Receive(ref iep);
             Assert.AreEqual(1, searcher.FindedIpEPs.Count);
             Assert.IsTrue(searcher.FindedIpEPs.ContainsKey("Kongo"));
             Assert.AreSame(res1, searcher.FindedIpEPs["Kongo"]);
@@ -167,7 +167,7 @@ namespace ChatClientTests
         [Test]
         public void StartSearchingServersTest_FirstStart_ChangesField()
         {
-            /*
+            
             //Arrange
             IPEndPoint iep = null;
             IPEndPoint res = new IPEndPoint(IPAddress.Parse("155.34.11.123"), 666);
@@ -183,7 +183,7 @@ namespace ChatClientTests
             
             //Assert
             Assert.IsTrue(searcher.FindedIpEPs.ContainsKey("ABRACADABRA"));
-            Assert.AreSame(res, searcher.FindedIpEPs["ABRACADABRA"]);*/
+            Assert.AreSame(res, searcher.FindedIpEPs["ABRACADABRA"]);
         }
 
         [Test]
