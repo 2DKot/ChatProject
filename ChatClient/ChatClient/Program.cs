@@ -15,9 +15,11 @@ namespace ChatClient
         [STAThread]
         static void Main()
         {
+#if !TESTING
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new ServerSearcherForm());
+#endif
         }
         
     }

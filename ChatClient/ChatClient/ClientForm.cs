@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !TESTING
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,6 +8,7 @@ using System.Threading;
 using System.Text;
 using System.Net.Sockets;
 using System.Net;
+/*using System.Diagnostics;*/
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -22,8 +24,8 @@ namespace ChatClient
         private Thread UpdatingControlsThread;
 
         private Client client;
-        private static bool clientIsConnected;
-        private static bool exitMode;
+        private /*static*/ bool clientIsConnected;
+        private /*static*/ bool exitMode;
         private readonly string[] statusesOfConnectButtons = new string[] { "Подключить", "Отключить" };
 
         //Отслеживаемые переменные:
@@ -49,6 +51,23 @@ namespace ChatClient
             PrepareFormToTyping();
             
         }
+
+        public bool ClientIsConnected
+        {
+            get
+            {
+                return this.clientIsConnected;
+            }
+        }
+
+        public List<string> CurrentNicks
+        {
+            get
+            {
+                return this.currentNicks;
+            }
+        }
+
         private void SendButton_Click(object sender, EventArgs e)
         {
             try
@@ -163,7 +182,7 @@ namespace ChatClient
 
         private void InitGettingMessagesThread()
         {
-            GettingMessagesThread = new Thread(() =>
+            /*GettingMessagesThread = new Thread(() =>
             {
                 try
                 {
@@ -197,8 +216,56 @@ namespace ChatClient
                 {
                     CloseClientConnection();
                 }
-            });
+            });*/
+            GettingMessagesThread = new Thread(GetMessages);
         }
+        private void GetMessages()
+        {
+            try
+                {
+                    while (clientIsConnected)
+                    {
+
+                        string rawText = client.GetTextData();
+                        newMessage = client.ConvertTextDataToMessage(rawText);
+                        if (currentNicks != client.OnlineUsers)
+                        {
+                            currentNicks = client.OnlineUsers;
+                        }
+                        if (currentNick != client.OwnNickName)
+                        {
+                            currentNick = client.OwnNickName;
+                        }
+
+                    }
+                }
+                catch (ArgumentException exc)
+                {
+                    serviceException = exc;
+                }
+
+                catch (Exception exc)
+                {
+                    serviceException = exc;
+                }
+
+                finally
+                {
+                    CloseClientConnection();
+                }
+        }
+        /*
+        [Conditional("DEBUG")]
+        public void GetMessages_PublicWrapper()
+        {
+
+        }
+        [Conditional("DEBUG")]
+        public void SetClientIsConnected(bool value)
+        {
+            this.clientIsConnected = value;
+        }*/
+
         private void CloseClientConnection()
         {
             clientIsConnected = false;
@@ -481,3 +548,4 @@ namespace ChatClient
         }
     }
 }
+#endif

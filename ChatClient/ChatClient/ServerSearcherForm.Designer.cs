@@ -1,4 +1,5 @@
-﻿namespace ChatClient
+﻿#if !TESTING
+namespace ChatClient
 {
     partial class ServerSearcherForm
     {
@@ -103,3 +104,4 @@
         private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
+#endif

@@ -9,13 +9,11 @@ using System.Threading;
 
 namespace ChatClient
 {
-
     public class Client
     {
         private static List<string> ignoredCommands;
         protected Dictionary<string, Action<string>> sideEffectCommandsToDelegate;
         private ITcpClient serviceClient;
-        //private TcpClient clientToServer;
         private List<string> onlineUsers;
         private string ownNickName;
         public Client(ITcpClient client)
@@ -69,14 +67,6 @@ namespace ChatClient
             {
                 return this.ownNickName;
             }
-            /*set
-            {
-                if (!System.Environment.StackTrace.Contains("YOUARE"))
-                {
-                    throw new ArgumentException("Недопустимое окружение для изменения переменной.");
-                }
-                this.ownNickName = value;
-            }*/
         }
 
         public List<string> OnlineUsers
@@ -85,19 +75,9 @@ namespace ChatClient
             {
                 return this.onlineUsers;
             }
-            /*set
-            {
-                if (!System.Environment.StackTrace.Contains("NAMES"))
-                {
-                    throw new ArgumentException("Недопустимое окружение для изменения переменной");
-                }
-                this.onlineUsers = value;
-            }*/
         }
-        
         public void DoConnect(IPEndPoint IEP)
         {
-            //Второе подключение - ошибка?
             if (IEP == null)
             {
                 throw new ArgumentNullException("Значение объекта IPEndPoint равно null");
@@ -106,7 +86,6 @@ namespace ChatClient
             {
                 this.serviceClient.Connect(IEP);
             }
-
         }
         public void DoDisconnect()
         {
@@ -173,7 +152,6 @@ namespace ChatClient
             }
             catch (Exception)
             {
-                //Переопределить свой exception
                 throw new Exception("Разрыв соединения при получении сообщения.");
             }
             if (IsFailedTextData(message))
@@ -196,11 +174,19 @@ namespace ChatClient
             if (firstIndexSpace != -1)
             {
                 command = text.Substring(0, firstIndexSpace);
-                restParameters = text.Remove(0, firstIndexSpace+1);
+                restParameters = text.Remove(0, firstIndexSpace + 1);
+                if (command == "PRIVMSG")
+                {
+                    firstIndexSpace = restParameters.IndexOf(' ');
+                    if (firstIndexSpace == -1)
+                    {
+                        throw new ArgumentException("Сообщение не по протоколу - отсутствуют необходимые аргументы.");
+                    }
+                }
             }
             else
             { 
-                throw new ArgumentException("Сообщение не по протоколу - отсутствует команда со стороны сервера."/* - работа могла быть прекращена."*/);
+                throw new ArgumentException("Сообщение не по протоколу - отсутствует команда со стороны сервера.");
             }
             if (sideEffectCommandsToDelegate.ContainsKey(command))
             {

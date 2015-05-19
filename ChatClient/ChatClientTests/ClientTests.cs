@@ -103,6 +103,7 @@ namespace ChatClientTests
             //Assert
             mockClient.Received().Connect(iep);
         }
+
         [Test]
         public void DoConnectTest_ConnectionWithConnectedStatus_NTR()
         {
@@ -118,7 +119,6 @@ namespace ChatClientTests
             mockClient.DidNotReceive().Connect(secondIEP);
 
         }
-
 
         //---DoDisconnectTEST---\\
         [Test]
@@ -147,7 +147,6 @@ namespace ChatClientTests
             mockClient.DidNotReceiveWithAnyArgs().Close();
 
         }
-
 
         //---SendTextTEST(string)---\\\
         [ExpectedException(typeof(Exception))]
@@ -217,7 +216,6 @@ namespace ChatClientTests
             clientObj.SendTextData(superStr);
         }
 
-
         //---SendTextTEST(string[])---\\\
         [ExpectedException(typeof(ArgumentException))]
         [TestCase(null)]
@@ -230,6 +228,7 @@ namespace ChatClientTests
             //Act & Assert
             clientObj.SendTextData(arg);
         }
+
         [ExpectedException(typeof(ArgumentException))]
         [Test]
         public void SendTextData1Test_ReceivesEmpty_throwsArgumentException()
@@ -352,8 +351,6 @@ namespace ChatClientTests
         }
         [TestCase("TOPSECRET! 2wad")]
         [TestCase("SSSAA 123 /'//-'';;z12")]
-        [TestCase("ssaasgg ddd")]
-        [TestCase("____ _____")]
         public void GetTextDataTest_GettingCorrectMessageWithConnectedStatus_AllFine(string arg)
         {
             //Arrange
@@ -376,27 +373,6 @@ namespace ChatClientTests
             Assert.AreEqual(arg, result);
         }
 
-        /*[TestCase("")]
-        [ExpectedException(typeof(Exception), ExpectedMessage = "Бескомандное или пустое")]
-        public void GetTextDataTest_GettingFailedMessageWithConnectedStatus_ThrowsException(string arg)
-        {
-            //Arrange
-            ITcpClient mockClient = Substitute.For<ITcpClient>();
-            mockClient.IsConnected().Returns(true);
-
-            byte[] buffWithMessage0 = Encoding.UTF8.GetBytes(arg);
-            byte[] buffWithLength0 = BitConverter.GetBytes(buffWithMessage0.Length);
-
-            mockClient.Read(Arg.Any<int>(), Arg.Any<int>())
-                .ReturnsForAnyArgs(buffWithLength0);
-            mockClient.Read(Arg.Any<int>(), Arg.Any<int>())
-                .ReturnsForAnyArgs(buffWithMessage0);
-            Client clientObj = new Client(mockClient);
-
-            //Act and Assert
-            string result = clientObj.GetTextData();
-        }*/
-
         [Test]
         [ExpectedException(typeof(Exception))]
         public void GetTextDataTest_CatchingExceptionWhileGettingOne_ThrowsException()
@@ -413,9 +389,7 @@ namespace ChatClientTests
             string result = clientObj.GetTextData();
         }
 
-
         //---ConvertTextDataToMessageTEST\\---
-        
         //Colors: 0 - black, 1 - red, 2 - indigo
         [TestCase("MSG Hello World!", "Hello World", 0)]
         [TestCase("PRIVMSG RANDOMTEXT OLOLO", "RANDOMTEXT: OLOLO", 2)]
@@ -435,7 +409,6 @@ namespace ChatClientTests
         [TestCase("ERROR 100", "Сервер собирается приостановить", 1)]
         public void ConvertTextDataToMessageTEST_ReceivesCorrectTextData_TheyAreMatched(string arg1, string arg2, int color)
         {
-            
             //Arrange
             ITcpClient mockClient = Substitute.For<ITcpClient>();
             Client clientObj = new Client(mockClient);
@@ -471,7 +444,7 @@ namespace ChatClientTests
         [TestCase(" ")]
         [TestCase("CRASH!")]
         [TestCase("uncommand WTF!")]
-        [TestCase("unknowedCommand123'';;")]
+        [TestCase("PRIVMSG ")]
         [ExpectedException(typeof(ArgumentException))]
         public void ConvertTextDataToMessageTEST_ReceivesIncorrectTextData_ThrowsArgumentException(string arg)
         {
@@ -494,8 +467,7 @@ namespace ChatClientTests
         }
 
         [TestCase("YOUARE PANDA", "PANDA")]
-        [TestCase("YOUARE ddd --- ssss", "ddd --- ssss")]
-        [TestCase("YOUARE 122;'';2//", "122;'';2//")]
+        [TestCase("YOUARE d", "d")]
         public void ConvertTextDataToMessageTEST_ReceivesSpecialTextData_ChangesNickNameField(string arg1, string arg2)
         {
             //Arrange
@@ -510,7 +482,6 @@ namespace ChatClientTests
         }
 
         [TestCase("NAMES PANDA JOHN COURT", "PANDA JOHN COURT")]
-        [TestCase("NAMES SSS_SSS aaa;;'; 22221", "SSS_SSS aaa;;'; 22221")]
         [TestCase("NAMES DDD ", "DDD ")]
         [TestCase("NAMES ", "")]
         public void ConvertTextDataToMessageTEST_ReceivesSpecialTextData_ChangesOnlineUsersField(string arg1, string arg2)
@@ -543,7 +514,6 @@ namespace ChatClientTests
         }
 
         [TestCase("purple")]
-        [TestCase("picachu")]
         public void OwnNickNameTest_UsingAsSetterFromYOUARE_ReturnsCorrectNickName(string arg)
         {
             //Arrange
@@ -556,9 +526,5 @@ namespace ChatClientTests
             StringAssert.Contains("", clientObj.OwnNickName);
         }
 
-        
-
-        //---ConvertToMessageTEST---\\
-        /*public void ConvertToMessageTest_*/
     }
 }

@@ -1,4 +1,5 @@
-﻿namespace ChatClient
+﻿#if !TESTING
+namespace ChatClient
 {
     partial class ClientForm
     {
@@ -419,7 +420,7 @@
 
         #endregion
 
-        public System.Windows.Forms.RichTextBox RTMainChatBox;
+        /*public*/private System.Windows.Forms.RichTextBox RTMainChatBox;
         private System.Windows.Forms.TextBox TypingBox;
         private System.Windows.Forms.Button SendButton;
         private System.Windows.Forms.TextBox IPAdressAndPortTextBox;
@@ -454,4 +455,4 @@
         private System.Windows.Forms.TextBox ServerNameTextBox;
     }
 }
-
+#endif

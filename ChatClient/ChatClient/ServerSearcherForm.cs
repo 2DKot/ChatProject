@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !TESTING
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -58,7 +59,7 @@ namespace ChatClient
                 }
             }
         }
-        public void ChangeServerListBox()
+        private void ChangeServerListBox()
         {
             ServersListBox.DataSource = mappedListServers;
         }
@@ -136,3 +137,4 @@ namespace ChatClient
 
     }
 }
+#endif

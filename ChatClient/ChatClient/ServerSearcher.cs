@@ -11,16 +11,13 @@ namespace ChatClient
 {
     public class ServerSearcher
     {
-        /*public protected int transPort = 667;
-        /*public protected int receivePort = 668;*/
-
+        /*public protected int transPort = 667;*/
         private readonly string findCommand = "FINDSERVER";
         private readonly string serverCommand = "IAMSERV";
         private IPEndPoint remoteIpEP;
         private Dictionary<string, IPEndPoint> findedIpEPs;
         private Thread receivingBroadcastMessagesThread;
         private bool findingStatus;
-        //private UdpClient commonClient;
         
         private IUdpClient commonClient;
 
@@ -31,7 +28,6 @@ namespace ChatClient
             findedIpEPs = new Dictionary<string, IPEndPoint>();
             findingStatus = false;
         }
-
         public Dictionary<string, IPEndPoint> FindedIpEPs
         {
             get
@@ -59,7 +55,6 @@ namespace ChatClient
                 throw new Exception("Поиск уже производится!");
             }
             findedIpEPs = new Dictionary<string, IPEndPoint>();
-            //findingStatus = true;
             SendBroadcastMessage();
             if (receivingBroadcastMessagesThread == null || 
                 receivingBroadcastMessagesThread.ThreadState == System.Threading.ThreadState.Aborted || 
@@ -99,7 +94,7 @@ namespace ChatClient
             catch (Exception)
             {}
         }
-        [Conditional("DEBUG")]
+        [Conditional("TESTING")]
         public void SendBroadcastMessage_PublicWrapper()
         {
             this.SendBroadcastMessage();
@@ -107,26 +102,21 @@ namespace ChatClient
         
         private void Interrupt()
         {
-            /*try
-            {*/
-                lock (commonClient)
+            lock (commonClient)
+            {
+                if (!commonClient.IsClientNull())
                 {
-                    if (!commonClient.IsClientNull())
-                    {
-                        commonClient.Close();
-                    }
+                    commonClient.Close();
                 }
-            /*}
-            catch (Exception) 
-            { };*/
+            }
         }
-        [Conditional("DEBUG")]
+        [Conditional("TESTING")]
         public void FindIPsServers_PublicWrapper()
         {
             FindIPsServers();
         }
 
-        [Conditional("DEBUG")]
+        [Conditional("TESTING")]
         public void SetFindingStatus()
         {
             this.findingStatus = true;
@@ -138,7 +128,6 @@ namespace ChatClient
             string message;
             string actualCommand;
             IPEndPoint currentIEP = null;
-            //this.findingStatus = true;
             try
             {
                 while (findingStatus)
