@@ -26,7 +26,7 @@ namespace ChatClient
         }
         public void InitializeUdpClient()
         {
-            this.client = new UdpClient();
+            this.client = new UdpClient(668);
             this.client.EnableBroadcast = true;
         }
         public bool IsClientNull()

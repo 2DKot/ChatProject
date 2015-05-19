@@ -182,41 +182,6 @@ namespace ChatClient
 
         private void InitGettingMessagesThread()
         {
-            /*GettingMessagesThread = new Thread(() =>
-            {
-                try
-                {
-                    while (clientIsConnected)
-                    {
-
-                        string rawText = client.GetTextData();
-                        newMessage = client.ConvertTextDataToMessage(rawText);
-                        if (currentNicks != client.OnlineUsers)
-                        {
-                            currentNicks = client.OnlineUsers;
-                        }
-                        if (currentNick != client.OwnNickName)
-                        {
-                            currentNick = client.OwnNickName;
-                        }
-
-                    }
-                }
-                catch (ArgumentException exc)
-                {
-                    serviceException = exc;
-                }
-
-                catch (Exception exc)
-                {
-                    serviceException = exc;
-                }
-
-                finally
-                {
-                    CloseClientConnection();
-                }
-            });*/
             GettingMessagesThread = new Thread(GetMessages);
         }
         private void GetMessages()

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChatClient
 {
+    public delegate void ListChangedHandler();
     public class ServerSearcher
     {
         /*public protected int transPort = 667;*/
@@ -18,6 +19,7 @@ namespace ChatClient
         private Dictionary<string, IPEndPoint> findedIpEPs;
         private Thread receivingBroadcastMessagesThread;
         private bool findingStatus;
+        public ListChangedHandler ListChanged;
         
         private IUdpClient commonClient;
 
@@ -144,6 +146,7 @@ namespace ChatClient
                             findedIpEPs.Add(message, currentIEP);
                         }
                     }
+                    ListChanged();
                 }
             }
             catch (SocketException)

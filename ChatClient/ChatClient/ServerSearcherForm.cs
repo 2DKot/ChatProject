@@ -19,14 +19,13 @@ namespace ChatClient
         private static readonly string startSearchButtonText = "Поиск";
         private List<string> mappedListServers;
         private Dictionary<string, IPEndPoint> copyOfListServer;
-        private bool refreshingStatus;
-        private Thread refreshingServerListBoxThread;
         public ServerSearcherForm()
         {
             InitializeComponent();
-            this.ConnectButton.Enabled = false;
+            this.ConnectButton.Enabled = false; //!!!
             this.SearchButton.Text = startSearchButtonText;
             searcher = new ServerSearcher(new MUdpClient(), 667);
+            searcher.ListChanged += ChangeServerListBox;
             mappedListServers = new List<string>();
         }
         private List<string> MapToList(Dictionary<string, IPEndPoint> dict)
@@ -41,27 +40,10 @@ namespace ChatClient
             }
             return rList;
         }
-        private void InitRefreshingServerListBoxThread()
-        {
-            refreshingServerListBoxThread = new Thread(RefreshListServer);
-        }
-        private void RefreshListServer()
-        {
-            while (refreshingStatus)
-            {
-                {
-                    if (copyOfListServer != searcher.FindedIpEPs)
-                    {
-                        copyOfListServer = searcher.FindedIpEPs;
-                        mappedListServers = MapToList(copyOfListServer);
-                        this.Invoke(new Action(ChangeServerListBox));
-                    }
-                }
-            }
-        }
         private void ChangeServerListBox()
         {
-            ServersListBox.DataSource = mappedListServers;
+            mappedListServers = MapToList(searcher.FindedIpEPs);
+            this.Invoke(new Action(() => ServersListBox.DataSource = mappedListServers));
         }
         private void SearchButton_Click(object sender, EventArgs e)
         {
@@ -80,24 +62,13 @@ namespace ChatClient
             {
                 searcher.EndSearchingServers();
             }
-            refreshingStatus = false;
-            if (refreshingServerListBoxThread != null && refreshingServerListBoxThread.ThreadState == ThreadState.Running)
-            {
-                refreshingServerListBoxThread.Join();
-            }
+           
             this.SearchButton.Text = startSearchButtonText;
         }
         private void StartSearch()
         {
             ResetServersList();
             searcher.StartSearchingServers();
-            refreshingStatus = true;
-            if (refreshingServerListBoxThread == null || refreshingServerListBoxThread.ThreadState == ThreadState.Aborted || 
-                refreshingServerListBoxThread.ThreadState == ThreadState.Stopped)
-            {
-                InitRefreshingServerListBoxThread();
-            }
-            refreshingServerListBoxThread.Start();
             this.SearchButton.Text = stopSearchButtonText;
         }
 
@@ -117,7 +88,7 @@ namespace ChatClient
         {
             StopSearch();
             string servName = this.mappedListServers[this.ServersListBox.SelectedIndex].Split(new char[]{' '})[0];
-            IPEndPoint tempIEP = this.copyOfListServer[servName];
+            IPEndPoint tempIEP = searcher.FindedIpEPs[servName];
             ClientForm form = new ClientForm(servName, tempIEP);
             this.Hide();
             form.ShowDialog();
