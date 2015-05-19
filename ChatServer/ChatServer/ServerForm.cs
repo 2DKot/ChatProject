@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !TESTING
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -138,7 +139,8 @@ namespace ChatServer
 
         private void bClearUserBase_Click(object sender, EventArgs e)
         {
-            server.register.RemoveAll();
+            server.ClearUsersDB();
         }
     }
 }
+#endif

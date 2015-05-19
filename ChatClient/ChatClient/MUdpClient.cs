@@ -33,7 +33,7 @@ namespace ChatClient
         }
         public void InitializeUdpClient()
         {
-            this.client = new UdpClient(this.receivePort);
+            this.client = new UdpClient();
             this.client.EnableBroadcast = true;
         }
         public int ReceivePort

@@ -18,7 +18,11 @@ namespace ChatServer
         TcpListener listener;
         FindingService findingService;
         bool stopped;
-        public Register register;
+#if TESTING
+        public
+#endif
+        Register register;
+
         RandomNick rndNick = new RandomNick();
         public UserList userList = new UserList();
         Thread serverThread;
@@ -149,5 +153,11 @@ namespace ChatServer
             if(serverThread != null) serverThread.Join();
             Log.Write("Сервер остановлен!");
         }
+#if !TESTING
+        public void ClearUsersDB()
+        {
+            register.RemoveAll();
+        }
+#endif
     }
 }

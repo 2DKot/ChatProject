@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ChatServer;
 using NUnit.Framework;
-using System.Net.Sockets;
-using System.Net;
-using System.Threading;
 
 namespace ChatServerTest
 {
@@ -64,7 +58,7 @@ namespace ChatServerTest
         }
 
         [Test]
-        public void Registration_ThisUserAlreadyExists()
+        public void Registration_UserAlreadyExists()
         {
             server.register.RemoveAll();
             server.register.Add("myUser", "56789");
@@ -78,7 +72,7 @@ namespace ChatServerTest
         {
             fclient.SkipFirstMessages();
 
-            fclient.SendAndRecieve("REG my", "ERROR 001");
+            fclient.SendAndRecieve("REG абвгд", "ERROR 001");
         }
 
         [Test]
@@ -156,7 +150,7 @@ namespace ChatServerTest
         {
             fclient.SkipFirstMessages();
 
-            fclient.SendAndRecieve("PRIVMSG my", "ERROR 001");
+            fclient.SendAndRecieve("PRIVMSG абвгд", "ERROR 001");
         }
 
         [Test]
@@ -189,7 +183,7 @@ namespace ChatServerTest
         }
 
         [Test]
-        public void WHOIAM()
+        public void WhoIAm()
         {
             fclient.SkipFirstMessages();
 
@@ -199,7 +193,7 @@ namespace ChatServerTest
         }
 
         [Test]
-        public void NICK()
+        public void Nick()
         {
             string name = server.userList[0].name;
             fclient.SkipFirstMessages();

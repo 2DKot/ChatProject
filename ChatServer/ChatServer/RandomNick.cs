@@ -22,7 +22,7 @@ namespace ChatServer
         };
 
         List<string> adjectivies = new List<string>() {
-            "Упоротый",
+            "Упртй",
             "Весёлый",
             "Гламурный",
             "Чоткий",

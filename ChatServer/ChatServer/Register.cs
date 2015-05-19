@@ -16,6 +16,7 @@ namespace ChatServer
         {
             lock (handler)
             {
+                regUnits.Clear();
                 File.Delete(regFile);
             }
         }
