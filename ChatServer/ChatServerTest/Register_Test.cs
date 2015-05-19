@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ChatServer;
 using NUnit.Framework;
-using System.Net.Sockets;
-using System.Net;
-using System.Threading;
 
 namespace ChatServerTest
 {
@@ -18,8 +12,8 @@ namespace ChatServerTest
         {
             Register reg = new Register();
             reg.RemoveAll();
-            reg.Add("юзер1", "123");
-            reg.Add("юзер2", "32");
+            Assert.IsTrue(reg.Add("юзер1", "123"));
+            Assert.IsTrue(reg.Add("юзер2", "32"));
             Assert.IsTrue(reg.Contains("юзер1"));
             Assert.IsTrue(reg.Contains("юзер2"));
             Assert.IsTrue(reg.Check("юзер1", "123"));
@@ -33,6 +27,26 @@ namespace ChatServerTest
             reg.RemoveAll();
             Assert.IsFalse(reg.Contains("юзер"));
             Assert.IsFalse(reg.Check("юзер", "пароль"));
+        }
+
+        [Test]
+        public void CheckWithBadPassword()
+        {
+            Register reg = new Register();
+            reg.RemoveAll();
+            reg.Add("юзер", "213");
+            Assert.IsTrue(reg.Contains("юзер"));
+            Assert.IsFalse(reg.Check("юзер", "пароль"));
+        }
+
+        [Test]
+        public void RemoveAll()
+        {
+            Register reg = new Register();
+            reg.Add("юзер", "213");
+            reg.RemoveAll();
+            Assert.IsFalse (reg.Contains("юзер"));
+            Assert.IsFalse(reg.Check("юзер", "213"));
         }
 
         [Test]

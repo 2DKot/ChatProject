@@ -11,9 +11,12 @@ namespace ChatServer
     {
         static void Main(string[] args)
         {
+#if !TESTING
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new ServerForm());
+#endif
         }
     }
 }
+

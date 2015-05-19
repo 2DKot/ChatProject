@@ -1,4 +1,5 @@
-﻿namespace ChatServer
+﻿#if !TESTING
+namespace ChatServer
 {
     partial class ServerForm
     {
@@ -308,3 +309,4 @@
         private System.Windows.Forms.Button bClearUserBase;
     }
 }
+#endif

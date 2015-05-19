@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServer", "ChatServer\ChatServer.csproj", "{0AB831F4-A7D6-4458-8226-9327B89D4588}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServerTest", "ChatServerTest\ChatServerTest.csproj", "{4643FC1E-41D4-4A15-A9AF-727A3B863522}"
@@ -13,6 +13,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
+		Testing|Any CPU = Testing|Any CPU
+		Testing|Mixed Platforms = Testing|Mixed Platforms
+		Testing|x86 = Testing|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Debug|Any CPU.ActiveCfg = Debug|x86
@@ -25,6 +28,12 @@ Global
 		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Release|Mixed Platforms.Build.0 = Release|x86
 		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Release|x86.ActiveCfg = Release|x86
 		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Release|x86.Build.0 = Release|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|Any CPU.ActiveCfg = Testing|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|Mixed Platforms.ActiveCfg = Testing|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|Mixed Platforms.Build.0 = Testing|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|Mixed Platforms.Deploy.0 = Testing|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|x86.ActiveCfg = Testing|x86
+		{0AB831F4-A7D6-4458-8226-9327B89D4588}.Testing|x86.Build.0 = Testing|x86
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -35,6 +44,11 @@ Global
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Release|x86.ActiveCfg = Release|Any CPU
+		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
+		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Testing|Any CPU.Build.0 = Testing|Any CPU
+		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Testing|Mixed Platforms.ActiveCfg = Testing|Any CPU
+		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Testing|Mixed Platforms.Build.0 = Testing|Any CPU
+		{4643FC1E-41D4-4A15-A9AF-727A3B863522}.Testing|x86.ActiveCfg = Testing|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
