@@ -9,8 +9,7 @@ namespace ChatServer
     {
         void MSG(User user, string prms)
         {
-            int splitter = prms.IndexOf(' ');
-            if (splitter == -1)
+            if (prms=="")
             {
                 user.SendError("001");
                 throw new FormatException("MSG <msg>");
