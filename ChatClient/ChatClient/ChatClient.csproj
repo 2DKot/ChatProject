@@ -58,7 +58,9 @@
     <Compile Include="MUdpClient.cs" />
     <Compile Include="Reactions.cs" />
     <Compile Include="Client.cs" />
-    <Compile Include="ClientForm.cs" />
+    <Compile Include="ClientForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ClientForm.Designer.cs">
       <DependentUpon>ClientForm.cs</DependentUpon>
     </Compile>

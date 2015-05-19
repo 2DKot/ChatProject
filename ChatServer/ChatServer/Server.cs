@@ -92,6 +92,7 @@ namespace ChatServer
                 }
                 catch (SocketException)
                 {
+                    if (stopped) return;
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} будет разорвано!", user.name));
                     userList.Remove(user);
@@ -100,6 +101,7 @@ namespace ChatServer
                 }
                 catch (ObjectDisposedException)
                 {
+                    if (stopped) return;
                     Log.Write(String.Format("Ошибка получения сообщения! "
                         + "Подключение с {0} было разорвано!", user.name));
                     userList.Remove(user);

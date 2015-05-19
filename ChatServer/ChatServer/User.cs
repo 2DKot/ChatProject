@@ -27,7 +27,14 @@ namespace ChatServer
         {
             NetworkStream ns = GetStream();
             byte[] sizeBuffer = new byte[4];
-            ns.Read(sizeBuffer, 0, 4);
+            try
+            {
+                ns.Read(sizeBuffer, 0, 4);
+            }
+            catch
+            {
+                throw new SocketException();
+            }
             int size = BitConverter.ToInt32(sizeBuffer, 0);
             if (size < 1)
             {
